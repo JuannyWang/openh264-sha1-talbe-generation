@@ -91,9 +91,9 @@ runGlobalVariableInitial()
 	#WorkingDir folder include   ./AllTestData   ./result  ./bats  ./cfg
 	CurrentDir=`pwd`
 	#test data space
-	FinalResultPath="${CurrentDir}/result"
-	IssueDataPath="${CurrentDir}/issue"
-	TempDataPath="${CurrentDir}/TempData"
+	FinalResultPath="result"
+	IssueDataPath="issue"
+	TempDataPath="TempData"
 	mkdir -p ${FinalResultPath}
 	mkdir -p ${IssueDataPath}
 	mkdir -p ${TempDataPath}
