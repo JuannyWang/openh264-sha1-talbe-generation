@@ -42,13 +42,11 @@ runGlobalVariableDef()
 	DiffInfo=""
 	DiffFlag=""
 	
+	EncoderCommand=""
 	#pass number
 	TotalCaseNum=""
 	PassCaseNum=""
 	UnpassCaseNum=""
-	
-	SHAValue=""
-	EncoderCommand=""
 }
 #called by runGlobalVariableInitial
 #usage runEncoderCommandInital
@@ -109,16 +107,18 @@ runGlobalVariableInitial()
 	
 	AllCasePassStatusFile="${FinalResultPath}/${TestSequenceName}_AllCaseOutput.csv"
 	AllCaseSHATableFile="${FinalResultPath}/${TestSequenceName}_AllCase_SHA1_Table.csv"
-	echo	"BitMatched Status,SHA-1 Value,  \
-			-frms, -numtl, -scrsig, -rc,     \
-			-tarb, -lqp 0, -iper,            \
-			-slcmd 0,-slcnum 0, -thread,     \
+	echo	"BitMatched Status,SHA-1 Value,    \
+			MD5String, BitStreamSize, YUVSize  \
+			-frms, -numtl, -scrsig, -rc,       \
+			-tarb, -lqp 0, -iper,              \
+			-slcmd 0,-slcnum 0, -thread,       \
 			-ltr, -db, -MaxNalSize  ">${AllCasePassStatusFile}
 			
-	echo	"SHA-1 Value, 					 \
-			-frms, -numtl, -scrsig, -rc,     \
-			-tarb, -lqp 0, -iper,            \
-			-slcmd 0,-slcnum 0, -thread,     \
+	echo	"SHA-1 Value, 					   \
+			MD5String, BitStreamSize, YUVSize  \
+			-frms, -numtl, -scrsig, -rc,       \
+			-tarb, -lqp 0, -iper,              \
+			-slcmd 0,-slcnum 0, -thread,       \
 			-ltr, -db, -MaxNalSize  ">${AllCaseSHATableFile}			
 			
 	#intial Commandline parameters
@@ -276,6 +276,24 @@ runBitStreamVerify()
 	fi	
     #*******************************************
 }
+#usage£º runGetFileSize  $FileName
+runGetFileSize()
+{
+	if [ $#  -lt 1  ]
+	then 
+		echo "usage£º runGetFileSize  $FileName!"
+		return 1
+	fi
+	
+	local FileName=$1
+	local FileSize=""
+	local TempInfo=""
+	
+	TempInfo=`ls -l $FileName`
+	FileSize=`echo $TempInfo | awk '{print $5}'`
+	
+	echo $FileSize
+}
 #call by  runAllCaseTest
 #delete needless files and output single case test result to log file
 #usage  runSingleCasePostAction $CaseData
@@ -289,23 +307,38 @@ runSingleCasePostAction()
 	fi
 	
 	local CaseData=$@
+	local SHA1String=""
+	local MD5String=""
+	local YUVSize=""
+	local BitStreamSize=""
+	
 	CaseInfo=`echo $CaseData | awk 'BEGIN {FS="[,\r]"} {for(i=1;i<=NF;i++) printf(" %s,",$i)} '` 
 	
-	local SHA1String=""
+	
 	if [ ${JMDecodeFlag}  -eq 0   ]
 	then 
-	    SHA1String=`sha1sum   ${BitStreamFile}`
+	    SHA1String=`sha1sum  -b  ${BitStreamFile}`
 		SHA1String=`echo ${SHA1String} | awk '{print $1}' `
+		
+		MD5String=`md5sum -b  ${BitStreamFile}`
+		MD5String=`echo ${MD5String} | awk '{print $1}' `
+		
+		YUVSize=`runGetFileSize  ${TestSequencePath}/${TestSequenceName}`
+	    BitStreamSize=`runGetFileSize  ${BitStreamFile}`
 	else
 		 SHA1String="NULL"
+		 MD5String="NULL"
+		 let "YUVSize=0"
+		 let "BitStreamSize=0"
 	fi
 	
 	echo "${DiffFlag}, -------SHA1 string is : ${SHAString}"
-	echo "${DiffFlag}, ${SHA1String}, ${CaseInfo}, ${EncoderCommand} ">>${AllCasePassStatusFile}
+	echo "${DiffFlag}, -------MD5  string is : ${MD5String}"
+	echo "${DiffFlag}, ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}, ${EncoderCommand} ">>${AllCasePassStatusFile}
 	
 	if [  !  "$SHA1String" = "NULL"  ]
 	then	
-		echo " ${SHA1String}, ${CaseInfo}">>${AllCaseSHATableFile}
+		echo " ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}">>${AllCaseSHATableFile}
 	fi
 	rm -f ${DiffInfo}
 	rm -f ${TempDataPath}/*
