@@ -29,7 +29,7 @@ runGetYUVInfo()
 	local Index=""
 	local Pattern_01="[xX]"
 	local Pattern_02="^[1-9][0-9]"
-	local Pattern_03="[1-9][0-9]$"
+	local Pattern_03="[0-9][0-9]$"
 	local Pattern_04="fps$"
 	#get PicW PicH info
 	let "Index=0"
