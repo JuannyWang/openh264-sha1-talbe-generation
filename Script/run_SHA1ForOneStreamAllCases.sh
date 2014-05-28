@@ -108,14 +108,14 @@ runGlobalVariableInitial()
 	AllCasePassStatusFile="${FinalResultPath}/${TestSequenceName}_AllCaseOutput.csv"
 	AllCaseSHATableFile="${FinalResultPath}/${TestSequenceName}_AllCase_SHA1_Table.csv"
 	echo	"BitMatched Status,SHA-1 Value,    \
-			MD5String, BitStreamSize, YUVSize  \
+			MD5String, BitStreamSize, YUVSize,  \
 			-frms, -numtl, -scrsig, -rc,       \
 			-tarb, -lqp 0, -iper,              \
 			-slcmd 0,-slcnum 0, -thread,       \
 			-ltr, -db, -MaxNalSize  ">${AllCasePassStatusFile}
 			
 	echo	"SHA-1 Value, 					   \
-			MD5String, BitStreamSize, YUVSize  \
+			MD5String, BitStreamSize, YUVSize,  \
 			-frms, -numtl, -scrsig, -rc,       \
 			-tarb, -lqp 0, -iper,              \
 			-slcmd 0,-slcnum 0, -thread,       \
@@ -276,12 +276,12 @@ runBitStreamVerify()
 	fi	
     #*******************************************
 }
-#usage£º runGetFileSize  $FileName
+#usage¡êrunGetFileSize  $FileName
 runGetFileSize()
 {
 	if [ $#  -lt 1  ]
 	then 
-		echo "usage£º runGetFileSize  $FileName!"
+		echo "usage¡êrunGetFileSize  $FileName!"
 		return 1
 	fi
 	
