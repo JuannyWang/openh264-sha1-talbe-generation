@@ -37,21 +37,20 @@ runAllTestBitstream()
 		echo "test bit stream is ${StreamName}"
 		echo ""
 		
-		if [[  "${StreamName}"  =~ "CI1_FT_B.264"  ]]
+		
+		cd  ${SubFolder}
+		#*******************************	
+		./run_OneBitStream.sh  ${StreamFullPath}  ${FinalResultDir} 
+		if [  ! $? -eq 0 ]
 		then
-			cd  ${SubFolder}
-			#*******************************	
-			./run_OneBitStream.sh  ${StreamFullPath}  ${FinalResultDir} 
-			if [  ! $? -eq 0 ]
-			then
-				echo "!!!uppassed for Bitstream: ${StreamName}"
-				cd  ${CurrentDir}
-				let "Flag=1"
-			fi
-			
+			echo "!!!uppassed for Bitstream: ${StreamName}"
 			cd  ${CurrentDir}
-			#*******************************		
-		fi	
+			let "Flag=1"
+		fi
+		
+		cd  ${CurrentDir}
+		#*******************************		
+	
 	done
 	
 	if [ ! ${Flag} -eq 0  ]
