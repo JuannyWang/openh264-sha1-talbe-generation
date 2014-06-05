@@ -57,7 +57,6 @@ runEncoderCommandInital()
 					   -scrsig     \
 					   -rc         \
 					   -tarb       \
-					   "-ltarb 0"  \
 					   "-lqp 0"    \
 					   -iper       \
 					   "-slcmd 0"  \
@@ -72,7 +71,6 @@ runEncoderCommandInital()
 						ContentSig   \
 						RC           \
 						BitRate      \
-						LayerBR      \
 						QP           \
 						IntraPeriod  \
 						SlcMd        \
@@ -81,7 +79,7 @@ runEncoderCommandInital()
 						LTR          \
 						LFilterIDC   \
 						MaxNalSize )
-	EncoderCommandValue=(0 0 0 0 0   0 0 0 0 0  0 0 0 0 0)
+	EncoderCommandValue=(0 0 0 0 0   0 0 0 0 0  0 0  0 0)
 	NumParameter=${#EncoderCommandSet[@]}
 	
 }	
@@ -172,6 +170,7 @@ runEncodeOneCase()
 		-sw   ${PicW} -sh   ${PicH}    \
 		-dw 0 ${PicW} -dh 0 ${PicH}    \
 		-frout 0  30                   \
+		-ltarb 0  ${EncoderCommandValue[3]}  \
 		${EncoderCommandSet[0]}  ${EncoderCommandValue[0]}  \
 		${EncoderCommandSet[1]}  ${EncoderCommandValue[1]}  \
 		${EncoderCommandSet[2]}  ${EncoderCommandValue[2]}  \
@@ -185,8 +184,7 @@ runEncodeOneCase()
 		${EncoderCommandSet[10]} ${EncoderCommandValue[10]} \
 		${EncoderCommandSet[11]} ${EncoderCommandValue[11]} \
 		${EncoderCommandSet[12]} ${EncoderCommandValue[12]} \
-		${EncoderCommandSet[13]} ${EncoderCommandValue[13]} \
-		${EncoderCommandSet[14]} ${EncoderCommandValue[14]} "	
+		${EncoderCommandSet[13]} ${EncoderCommandValue[13]} "
 	echo ""
 	echo "case line is :"
 	EncoderCommand="./h264enc  ${CaseCommand} -bf   ${BitStreamFile}  -org   ${TestSequencePath}/${TestSequenceName} "
