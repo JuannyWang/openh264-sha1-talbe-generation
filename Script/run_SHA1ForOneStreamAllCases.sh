@@ -57,6 +57,7 @@ runEncoderCommandInital()
 					   -scrsig     \
 					   -rc         \
 					   -tarb       \
+					   "-ltarb 0"  \
 					   "-lqp 0"    \
 					   -iper       \
 					   "-slcmd 0"  \
@@ -71,6 +72,7 @@ runEncoderCommandInital()
 						ContentSig   \
 						RC           \
 						BitRate      \
+						LayerBR      \
 						QP           \
 						IntraPeriod  \
 						SlcMd        \
@@ -79,7 +81,7 @@ runEncoderCommandInital()
 						LTR          \
 						LFilterIDC   \
 						MaxNalSize )
-	EncoderCommandValue=(0 0 0 0 0   0 0 0 0 0  0 0 0 0)
+	EncoderCommandValue=(0 0 0 0 0   0 0 0 0 0  0 0 0 0 0)
 	NumParameter=${#EncoderCommandSet[@]}
 	
 }	
@@ -183,7 +185,8 @@ runEncodeOneCase()
 		${EncoderCommandSet[10]} ${EncoderCommandValue[10]} \
 		${EncoderCommandSet[11]} ${EncoderCommandValue[11]} \
 		${EncoderCommandSet[12]} ${EncoderCommandValue[12]} \
-		${EncoderCommandSet[13]} ${EncoderCommandValue[13]} "	
+		${EncoderCommandSet[13]} ${EncoderCommandValue[13]} \
+		${EncoderCommandSet[14]} ${EncoderCommandValue[14]} "	
 	echo ""
 	echo "case line is :"
 	EncoderCommand="./h264enc  ${CaseCommand} -bf   ${BitStreamFile}  -org   ${TestSequencePath}/${TestSequenceName} "
