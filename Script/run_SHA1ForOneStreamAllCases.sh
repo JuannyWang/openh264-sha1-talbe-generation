@@ -1,5 +1,4 @@
 
-
 #!/bin/bash
  
 #***********************************************************
@@ -11,29 +10,51 @@
 #         ${CaseSummaryFile}
 #         ${FlagFile}
 #***********************************************************
-#***********************************************************
-#global variable definition
-#usage runGlobalVariableDef
-runGlobalVariableDef()
+runGlobalVariableInitial()
 {
-	WorkingDirDir=""
+    #TestDataSpaceDir=../AllTestData  CurrentDir=../AllTestData/TestSetXXX/***.yuv   eg ../AllTestData/TestSetCIF/basketball.yuv
+	#WorkingDir folder include   ./AllTestData   ./result  ./bats  ./cfg
+	CurrentDir=`pwd`
 	#test data space
-	FinalResultPath=""
-	IssueDataPath=""
-	TempDataPath=""
-	#for test sequence info
-	TestSequenceName=""
-	PicW=""
-	PicH=""
+	FinalResultPath="result"
+	IssueDataPath="issue"
+	TempDataPath="TempData"
+	mkdir -p ${FinalResultPath}
+	mkdir -p ${IssueDataPath}
+	mkdir -p ${TempDataPath}
+    TestSequencePath="${CurrentDir}"
+	
+	#get YUV detail info $picW $picH $FPS
+	declare -a aYUVInfo
+	aYUVInfo=(`./run_ParseYUVInfo.sh  ${TestSequenceName}`)
+	PicW=${aYUVInfo[0]}
+	PicH=${aYUVInfo[1]}
 	#test cfg file and test info output file
-	ConfigureFile=""
-	AllCaseFile=""
-	#xxx.csv
-	AllCasePassStatusFile=""
-	#for encoder command 
+	ConfigureFile=welsenc.cfg
+	
+	AllCasePassStatusFile="${FinalResultPath}/${TestSequenceName}_AllCaseOutput.csv"
+	AllCaseSHATableFile="${FinalResultPath}/${TestSequenceName}_AllCase_SHA1_Table.csv"
+	AllCaseConsoleLogFile="${FinalResultPath}/${TestSequenceName}.TestLog"
+	CaseSummaryFile="${FinalResultPath}/${TestSequenceName}.Summary"
+	echo	"BitMatched Status,SHA-1 Value,    \
+			MD5String, BitStreamSize, YUVSize,  \
+			-frms, -numtl, -scrsig, -rc,       \
+			-tarb, -lqp 0, -iper,              \
+			-slcmd 0,-slcnum 0, -thread,       \
+			-ltr, -db, -MaxNalSize  ">${AllCasePassStatusFile}
+			
+	echo	"SHA-1 Value, 					   \
+			MD5String, BitStreamSize, YUVSize,  \
+			-frms, -numtl, -scrsig, -rc,       \
+			-tarb, -lqp 0, -iper,              \
+			-slcmd 0,-slcnum 0, -thread,       \
+			-ltr, -db, -MaxNalSize  ">${AllCaseSHATableFile}			
+			
+	#intial Commandline parameters
 	declare -a EncoderCommandSet
 	declare -a EncoderCommandName
 	declare -a EncoderCommandValue
+    
 	#encoder parameters  change based on the case info
 	CaseInfo=""
 	BitStreamFile=""
@@ -43,10 +64,13 @@ runGlobalVariableDef()
 	DiffFlag=""
 	
 	EncoderCommand=""
-	#pass number
-	TotalCaseNum=""
-	PassCaseNum=""
-	UnpassCaseNum=""
+	let "TotalCaseNum=0"
+	let "EncPassCaseNum=0"
+	let "EncUnpassCaseNum=0"
+	let "DecPassCaseNum=0"
+	let "DecUnpassCaseNum=0"
+	let "EncoderFlag=1"
+	let "DecoderFlag=1"
 }
 #called by runGlobalVariableInitial
 #usage runEncoderCommandInital
@@ -83,52 +107,6 @@ runEncoderCommandInital()
 	NumParameter=${#EncoderCommandSet[@]}
 	
 }	
-runGlobalVariableInitial()
-{
-    #TestDataSpaceDir=../AllTestData  CurrentDir=../AllTestData/TestSetXXX/***.yuv   eg ../AllTestData/TestSetCIF/basketball.yuv
-	#WorkingDir folder include   ./AllTestData   ./result  ./bats  ./cfg
-	CurrentDir=`pwd`
-	#test data space
-	FinalResultPath="result"
-	IssueDataPath="issue"
-	TempDataPath="TempData"
-	mkdir -p ${FinalResultPath}
-	mkdir -p ${IssueDataPath}
-	mkdir -p ${TempDataPath}
-    TestSequencePath="${CurrentDir}"
-	
-	#get YUV detail info $picW $picH $FPS
-	declare -a aYUVInfo
-	aYUVInfo=(`./run_ParseYUVInfo.sh  ${TestSequenceName}`)
-	PicW=${aYUVInfo[0]}
-	PicH=${aYUVInfo[1]}
-	#test cfg file and test info output file
-	ConfigureFile=welsenc.cfg
-	
-	AllCasePassStatusFile="${FinalResultPath}/${TestSequenceName}_AllCaseOutput.csv"
-	AllCaseSHATableFile="${FinalResultPath}/${TestSequenceName}_AllCase_SHA1_Table.csv"
-	echo	"BitMatched Status,SHA-1 Value,    \
-			MD5String, BitStreamSize, YUVSize,  \
-			-frms, -numtl, -scrsig, -rc,       \
-			-tarb, -lqp 0, -iper,              \
-			-slcmd 0,-slcnum 0, -thread,       \
-			-ltr, -db, -MaxNalSize  ">${AllCasePassStatusFile}
-			
-	echo	"SHA-1 Value, 					   \
-			MD5String, BitStreamSize, YUVSize,  \
-			-frms, -numtl, -scrsig, -rc,       \
-			-tarb, -lqp 0, -iper,              \
-			-slcmd 0,-slcnum 0, -thread,       \
-			-ltr, -db, -MaxNalSize  ">${AllCaseSHATableFile}			
-			
-	#intial Commandline parameters
-	runEncoderCommandInital
-    
-	let "TotalCaseNum=0"
-	let "PassCaseNum=0"
-	let "UnpassCaseNum=0"
-	let "JMDecodeFlag=1"
-}
 #***********************************************************
 #call by  runAllCaseTest
 # parse case info --encoder preprocess
@@ -189,100 +167,18 @@ runEncodeOneCase()
 	echo "case line is :"
 	EncoderCommand="./h264enc  ${CaseCommand} -bf   ${BitStreamFile}  -org   ${TestSequencePath}/${TestSequenceName} "
 	echo ${EncoderCommand}
-	./h264enc     ${CaseCommand}    		  \
-					-bf   ${BitStreamFile}    \
-					-org   ${TestSequencePath}/${TestSequenceName} 
+	./h264enc   ${CaseCommand}        \
+		-bf     ${BitStreamFile}      \
+		-org    ${TestSequencePath}/${TestSequenceName} \
+		-drec 0 ${RecYUVFile}
 					
 }
-#call by  runAllCaseTest 
-#WelsRuby rec yuv and JSVM dec yuv  comparison
-#usage  runJSVMVerify
-runBitStreamVerify()
-{
-	echo ""
-	echo "******************************************"
-	echo "Bit stream conformance virification.... "
-	
-	let "JMDecodeFlag=1"
-	
-	#*******************************************
-	if [ ! -s ${BitStreamFile} ]
-	then 
-		let "UnpassCaseNum++"
-		echo "1:unpassed! 0 bits--bit stream"
-		DiffFlag="1:unpassed! 0 bits--bit stream"
-		return 1
-	fi
-	#*******************************************
-	
-	#*******************************************
-	#run JM decoder
-	./ldecod.exe -p InputFile="${BitStreamFile}"  -p OutputFile="${JMDecYUVFile}"
-    let "JMDecodeFlag=$?"
-	if [ ! ${JMDecodeFlag}  -eq 0  ]
-	then
-		let "UnpassCaseNum++"
-		echo "2:unpassed! JMDecoder decode failed"
-		DiffFlag="2:unpassed! JMDecoder decode failed"
-		return 1	
-	fi
-	#*******************************************
-	
-	#*******************************************
-	#welsruby decoder
-	./h264dec     ${BitStreamFile}   ${DecYUVFile}
-	#*******************************************
-    let "WelsDecodeFlag=$?"
-	if [ ! ${WelsDecodeFlag}  -eq 0  ]
-	then
-		let "UnpassCaseNum++"
-		echo "3:unpassed! WelsDecoder decode failed"
-		DiffFlag="3:unpassed! WelsDecoder decode failed"
-		return 1	
-	fi
-	
-	#*******************************************
-	if [ ! -s ${JMDecYUVFile}  -a   ! -s ${DecYUVFile}  ]
-	then
-		let "UnpassCaseNum++"
-		DiffFlag="4:unpassed! YUV 0 bits JM-WelsDec"
-		echo "4:unpassed! YUV 0 bits JM-WelsDec"
-		return 1
-	elif [ ! -s ${JMDecYUVFile}  ]
-	then
-		let "UnpassCaseNum++"
-		DiffFlag="5:unpassed! YUV 0 bits--JM"
-		echo "5:unpassed! YUV 0 bits--JM"
-		return 1
-	elif [ ! -s ${DecYUVFile} ]
-	then
-		let "UnpassCaseNum++"
-		DiffFlag="6:unpassed! YUV 0 bits--WelDec"
-		echo "6:unpassed! YUV 0 bits--WelDec"
-		return 1
-	fi
-    #*******************************************
-	#*******************************************	
-	diff -q ${JMDecYUVFile}   ${DecYUVFile}>${DiffInfo}
-	if [  -s ${DiffInfo} ]
-	then 
-		echo "diff info:  bitsteam not matched "
-		cp -f ${BitstreamTarget}            ${IssueDataPath}
-		DiffFlag="7:unpassed!"
-		let "UnpassCaseNum++"
-	else
-		echo "bitstream pass"
-		DiffFlag="0:passed!"
-		let "PassCaseNum++"
-	fi	
-    #*******************************************
-}
-#usage¡êrunGetFileSize  $FileName
+#usage?¨ºrunGetFileSize  $FileName
 runGetFileSize()
 {
 	if [ $#  -lt 1  ]
 	then 
-		echo "usage¡êrunGetFileSize  $FileName!"
+		echo "usage?¨ºrunGetFileSize  $FileName!"
 		return 1
 	fi
 	
@@ -316,7 +212,7 @@ runSingleCasePostAction()
 	CaseInfo=`echo $CaseData | awk 'BEGIN {FS="[,\r]"} {for(i=1;i<=NF;i++) printf(" %s,",$i)} '` 
 	
 	
-	if [ ${JMDecodeFlag}  -eq 0   ]
+	if [ ${EncoderFlag}  -eq 0   ]
 	then 
 	    SHA1String=`sha1sum  -b  ${BitStreamFile}`
 		SHA1String=`echo ${SHA1String} | awk '{print $1}' `
@@ -333,7 +229,7 @@ runSingleCasePostAction()
 		 let "BitStreamSize=0"
 	fi
 	
-	echo "${DiffFlag}, -------SHA1 string is : ${SHAString}"
+	echo "${DiffFlag}, -------SHA1 string is : ${SHA1String}"
 	echo "${DiffFlag}, -------MD5  string is : ${MD5String}"
 	echo "${DiffFlag}, ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}, ${EncoderCommand} ">>${AllCasePassStatusFile}
 	
@@ -344,27 +240,24 @@ runSingleCasePostAction()
 	rm -f ${DiffInfo}
 	rm -f ${TempDataPath}/*
 }
-#usage runOutputPassNum
-runOutputPassNum()
-{
-	# output file locate in ../result
-	echo ""
-	echo "***********************************************************"
-	echo "${TestSetIndex}_${TestSequenceName}"
-	echo "total case  Num is :  ${TotalCaseNum}"
-	echo "pass  case  Num is : ${PassCaseNum}"
-	echo "unpass case Num is : ${UnpassCaseNum} "
-	echo "issue bitstream can be found in .../AllTestData/${TestSetIndex}/issue"
-	echo "detail result  can be found in .../AllTestData/${TestSetIndex}/result"
-	echo "***********************************************************"
-	echo ""
-}
 # run all test case based on XXXcase.csv file
 #usage  runAllCaseTest
 runAllCaseTest()
 {
 	local Flag=""
 	let "Flag=0"
+	local ReturnInfo=""
+	local CheckLogFile="JMDec_WelsDec_log.log"
+	declare -a BitStreamCheckInfo
+	BitStreamCheckInfo=("0:passed! bitstream pass"     \
+	"1:unpassed! 0 bits--bit stream"          \
+	"2:unpassed! 0 bits--Rec YUV file"        \
+	"3:unpassed! JMDecoder  decoded failed"   \
+	"4:unpassed! Diff: JMDec-Rec not matched" \
+	"5:unpassed! WelDecoder decoded failed"   \
+	"6:unpassed! Diff: JMDec-Dec not matched" \
+	"7:unpassed! Diff: Rec-Dec   not matched" )
+	
 	while read CaseData
 	do
 		#get case parameter's value 
@@ -383,17 +276,104 @@ runAllCaseTest()
 			echo ""
 			echo ""
 			echo ""
-			echo "********************case index is ${TotalCaseNum}**************************************"			
+			echo "********************case index is ${TotalCaseNum}**************************************"	
+			
 			runParseCaseInfo ${CaseData}
 			echo ""
-			runEncodeOneCase  ${CodecFolder}				
-			runBitStreamVerify
+			runEncodeOneCase  ${CodecFolder}	
+			echo ""
+			echo "******************************************"
+			echo "Bit stream conformance virification.... "
+				
+			#bit stream file validation checking, 
+			#encoder: Rec.yuv should be same with JM_Dec.yuv
+			#decoder: Rec.yuv should be same with JM_Dec.yuv
+			ReturnInfo=`./run_BitStreamValidateCheck.sh  ${BitStreamFile}  ${JMDecYUVFile}  ${DecYUVFile}  ${RecYUVFile} ${IssueDataPath}`
+			if [    "${ReturnInfo}" = "${BitStreamCheckInfo[1]}"   -o   "${ReturnInfo}" = "${BitStreamCheckInfo[2]}"  \
+     			-o  "${ReturnInfo}" = "${BitStreamCheckInfo[3]}"   -o   "${ReturnInfo}" = "${BitStreamCheckInfo[4]}"  ]
+			then
+				let "EncoderFlag=1"  #encoder unpass
+				let "EncUnPassCaseNum++"
+			else
+				let "EncoderFlag=0"   #encoder pass
+				let "EncPassCaseNum++"
+			fi
 			
+			if [    "${ReturnInfo}" = "${BitStreamCheckInfo[5]}"   -o   "${ReturnInfo}" = "${BitStreamCheckInfo[6]}"  \
+     			-o  "${ReturnInfo}" = "${BitStreamCheckInfo[7]}" ]
+			then
+				let "DecoderFlag=1"  #deccoder unpass
+				let "DecUnpassCaseNum++"
+			else
+				let "DecoderFlag=0"   #deccoder pass
+				let "DecPassCaseNum++"
+			fi
+			
+			if [  ${EncoderFlag}  -eq 1  -o ${DecoderFlag} -eq 1 ]
+			then
+				cp -f ${BitStreamFile}            ${IssueDataPath}	
+			fi
+         	
+			DiffFlag=${ReturnInfo}
+			
+			cat ${CheckLogFile}
+			echo "return value for bit stream is  ${ReturnInfo}"
 			runSingleCasePostAction  ${CaseData}
-			let "TotalCaseNum++"				
+			let "TotalCaseNum++"	
+			
 		fi
 	done <$AllCaseFile
 	runOutputPassNum
+}
+#usage runOutputPassNum
+runOutputPassNum()
+{
+	# output file locate in ../result
+	echo ""
+	echo "***********************************************************"
+	echo "${TestSetIndex}_${TestSequenceName}"
+	echo "total case  Num is :  ${TotalCaseNum}"
+	echo "Encoder pass  case  Num is : ${EncPassCaseNum}"
+	echo "Encoder unpass case Num is : ${EncUnpassCaseNum} "
+	echo "Decoder pass  case  Num is : ${DecPassCaseNum}"
+	echo "Decoder unpass case Num is : ${DecUnpassCaseNum} "
+	echo "issue bitstream can be found in .../AllTestData/${TestSetIndex}/issue"
+	echo "detail result  can be found in .../AllTestData/${TestSetIndex}/result"
+	echo "***********************************************************"
+	echo ""
+	
+	
+	TestFolder=`echo $CurrentDir | awk 'BEGIN {FS="/"} { i=NF; print $i}'`
+	
+	
+	echo "${TestSetIndex}_${TestSequenceName}, \
+		 ${EncPassCaseNum} pass!,                   \
+		 ${EncUnpassCaseNum} unpass!,				\
+		 ${DecPassCaseNum} pass!,                   \
+		 ${DecUnpassCaseNum} unpass!,				\
+		 detail file located in ../AllTestData/${TestFolder}/result">${CaseSummaryFile}
+		 
+		 
+	#generate All case Flag
+	if [  ! ${EncUnpassCaseNum} -eq 0  ]	
+	then
+		FlagFile="./result/${TestSetIndex}_${TestSequenceName}.unpassFlag"
+	else
+		FlagFile="./result/${TestSetIndex}_${TestSequenceName}.passFlag"
+	fi
+	touch ${FlagFile}
+	
+	#prompt info
+	echo ""
+	echo "***********************************************************"
+	echo "detail file include:"
+	echo "../AllTestData/${TestFolder}/result/  ${AllCaseConsoleLogFile}"
+	echo "../AllTestData/${TestFolder}/result/  ${CaseSummaryFile}"
+	echo "../AllTestData/${TestFolder}/result/  ${FlagFile}"
+	echo "***********************************************************"
+	echo ""
+	
+	
 }
 #***********************************************************
 # usage: runMain $TestYUV  $AllCaseFile
@@ -405,40 +385,19 @@ runMain()
 		return 1
 	fi
 	
-	runGlobalVariableDef
 	#for test sequence info
 	TestSequenceName=$1
 	AllCaseFile=$2	
     runGlobalVariableInitial	
-	AllCaseConsoleLogFile="${FinalResultPath}/${TestSequenceName}.TestLog"
-	CaseSummaryFile="${FinalResultPath}/${TestSequenceName}.Summary"
+	runEncoderCommandInital
 	FlagFile=""
 	#run all cases
 	runAllCaseTest>${AllCaseConsoleLogFile}
+	
+	
 	# output file locate in ./result
-	TestFolder=`echo $CurrentDir | awk 'BEGIN {FS="/"} { i=NF; print $i}'`
-	echo "${TestSetIndex}_${TestSequenceName}, \
-		 ${PassCaseNum} pass!,                  \
-		 ${UnpassCaseNum} unpass!,				\
-		 detail file located in ../AllTestData/${TestFolder}/result">${CaseSummaryFile}
-	#generate All case Flag
-	if [  ! ${UnpassCaseNum} -eq 0  ]	
-	then
-		FlagFile="../result/${TestSetIndex}_${TestSequenceName}.unpassFlag"
-	else
-		FlagFile=" ../result/${TestSetIndex}_${TestSequenceName}.passFlag"
-	fi
-	touch ${FlagFile}
+	
 	runOutputPassNum
-	#prompt info
-	echo ""
-	echo "***********************************************************"
-	echo "detail file include:"
-	echo "../AllTestData/${TestFolder}/result/  ${AllCaseConsoleLogFile}"
-	echo "../AllTestData/${TestFolder}/result/  ${CaseSummaryFile}"
-	echo "../AllTestData/${TestFolder}/result/  ${FlagFile}"
-	echo "***********************************************************"
-	echo ""
 }
 #call main function 
 TestYUVName=$1
