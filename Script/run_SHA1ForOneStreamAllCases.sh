@@ -240,6 +240,69 @@ runSingleCasePostAction()
 	rm -f ${DiffInfo}
 	rm -f ${TempDataPath}/*
 }
+#usage: runValidateCheck $ReturnInfo
+runValidateCheck()
+{
+	if [ $#  -lt 1  ]
+	then 
+		echo "usage: runValidateCheck \$ReturnInfo"
+		return 1
+	fi
+	
+	local ReturnInfo=$1
+	#encoder check
+	if [[ "${ReturnInfo}" =~ "1:unpassed!"  ]]
+	then
+		let "EncoderFlag=1"
+	elif [[ "${ReturnInfo}" =~ "2:unpassed!"   ]]
+	then
+		let "EncoderFlag=1"
+	elif [[ "${ReturnInfo}" =~ "3:unpassed!"   ]]
+	then
+		let "EncoderFlag=1"
+	elif [[ "${ReturnInfo}" =~ "4:unpassed!"   ]]
+	then
+		let "EncoderFlag=1"
+	else
+		let "EncoderFlag=0"
+	fi
+	
+	#decoder check
+	if [[ "${ReturnInfo}" =~ "5:unpassed!"  ]]
+	then
+		let "DecoderFlag=1"
+	elif [[ "${ReturnInfo}" =~ "6:unpassed!"   ]]
+	then
+		let "DecoderFlag=1"
+	elif [[ "${ReturnInfo}" =~ "7:unpassed!"   ]]
+	then
+		let "DecoderFlag=1"
+	else
+		let "DecoderFlag=0"
+	fi
+	
+    #pass number	
+	if [ ${EncoderFlag}  -eq 0  ]
+	then
+		echo " pass"
+		let "EncPassCaseNum ++"
+	else
+		echo "not pass"
+		let " EncUnpassCaseNum ++"
+	fi
+	
+	if [  ${DecoderFlag} -eq 0  ]
+	then
+		let "DecPassCaseNum ++"
+	else
+		let "DecUnPassCaseNum ++"
+	fi
+	
+	if [  ${EncoderFlag}  -eq 1  -o ${DecoderFlag} -eq 1 ]
+	then
+		cp -f ${BitStreamFile}            ${IssueDataPath}	
+	fi	
+}
 # run all test case based on XXXcase.csv file
 #usage  runAllCaseTest
 runAllCaseTest()
@@ -248,15 +311,6 @@ runAllCaseTest()
 	let "Flag=0"
 	local ReturnInfo=""
 	local CheckLogFile="JMDec_WelsDec_log.log"
-	declare -a BitStreamCheckInfo
-	BitStreamCheckInfo=("0:passed! bitstream pass"     \
-	"1:unpassed! 0 bits--bit stream"          \
-	"2:unpassed! 0 bits--Rec YUV file"        \
-	"3:unpassed! JMDecoder  decoded failed"   \
-	"4:unpassed! Diff: JMDec-Rec not matched" \
-	"5:unpassed! WelDecoder decoded failed"   \
-	"6:unpassed! Diff: JMDec-Dec not matched" \
-	"7:unpassed! Diff: Rec-Dec   not matched" )
 	
 	while read CaseData
 	do
@@ -289,30 +343,7 @@ runAllCaseTest()
 			#encoder: Rec.yuv should be same with JM_Dec.yuv
 			#decoder: Rec.yuv should be same with JM_Dec.yuv
 			ReturnInfo=`./run_BitStreamValidateCheck.sh  ${BitStreamFile}  ${JMDecYUVFile}  ${DecYUVFile}  ${RecYUVFile} ${IssueDataPath}`
-			if [    "${ReturnInfo}" = "${BitStreamCheckInfo[1]}"   -o   "${ReturnInfo}" = "${BitStreamCheckInfo[2]}"  \
-     			-o  "${ReturnInfo}" = "${BitStreamCheckInfo[3]}"   -o   "${ReturnInfo}" = "${BitStreamCheckInfo[4]}"  ]
-			then
-				let "EncoderFlag=1"  #encoder unpass
-				let "EncUnPassCaseNum++"
-			else
-				let "EncoderFlag=0"   #encoder pass
-				let "EncPassCaseNum++"
-			fi
-			
-			if [    "${ReturnInfo}" = "${BitStreamCheckInfo[5]}"   -o   "${ReturnInfo}" = "${BitStreamCheckInfo[6]}"  \
-     			-o  "${ReturnInfo}" = "${BitStreamCheckInfo[7]}" ]
-			then
-				let "DecoderFlag=1"  #deccoder unpass
-				let "DecUnpassCaseNum++"
-			else
-				let "DecoderFlag=0"   #deccoder pass
-				let "DecPassCaseNum++"
-			fi
-			
-			if [  ${EncoderFlag}  -eq 1  -o ${DecoderFlag} -eq 1 ]
-			then
-				cp -f ${BitStreamFile}            ${IssueDataPath}	
-			fi
+			runValidateCheck $ReturnInfo
          	
 			DiffFlag=${ReturnInfo}
 			
@@ -403,5 +434,6 @@ runMain()
 TestYUVName=$1
 AllCaseFile=$2
 runMain  ${TestYUVName}   ${AllCaseFile}
+
 
 
