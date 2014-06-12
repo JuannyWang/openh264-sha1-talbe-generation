@@ -318,10 +318,10 @@ runSingleCasePostAction()
 	
 	if [ ${JMDecodeFlag}  -eq 0   ]
 	then 
-	    SHA1String=`sha1sum  -b  ${BitStreamFile}`
-		SHA1String=`echo ${SHA1String} | awk '{print $1}' `
+	    SHA1String=`openssl sha1  ${BitStreamFile}`
+		SHA1String=`echo ${SHA1String} | awk '{print $2}' `
 		
-		MD5String=`md5sum -b  ${BitStreamFile}`
+		MD5String=`openssl md5  ${BitStreamFile}`
 		MD5String=`echo ${MD5String} | awk '{print $1}' `
 		
 		YUVSize=`runGetFileSize  ${TestSequencePath}/${TestSequenceName}`
