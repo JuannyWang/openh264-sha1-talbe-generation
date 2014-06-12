@@ -322,7 +322,7 @@ runSingleCasePostAction()
 		SHA1String=`echo ${SHA1String} | awk '{print $2}' `
 		
 		MD5String=`openssl md5  ${BitStreamFile}`
-		MD5String=`echo ${MD5String} | awk '{print $1}' `
+		MD5String=`echo ${MD5String} | awk '{print $2}' `
 		
 		YUVSize=`runGetFileSize  ${TestSequencePath}/${TestSequenceName}`
 	    BitStreamSize=`runGetFileSize  ${BitStreamFile}`
