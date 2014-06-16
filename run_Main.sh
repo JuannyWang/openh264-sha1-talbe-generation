@@ -32,11 +32,13 @@
 	if [ ! $? -eq 0 ]
 	then
 		echo "failed: not all cases for all bit stream are passed !"
+		./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}
 		exit 1
 	else
 		echo "all cases have been passed!"
 		echo ""
 		echo ""
+		./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}
 		exit 0
 	fi
 	 
@@ -44,4 +46,6 @@
 runMain
 #copy SHA-1 table
 ./run_CopySHA1Table.sh  FinalResult/  SHA1Table/
+
+
 

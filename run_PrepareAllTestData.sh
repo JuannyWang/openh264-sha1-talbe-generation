@@ -1,10 +1,5 @@
 
 #!/bin/bash
-
-
-#usage: run_PrepareAllTestFolder.sh   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $
-
-
 #usage: runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFolder/$SH1TableFolder
 runPrepareALlFolder()
 {
@@ -25,10 +20,27 @@ runPrepareALlFolder()
 	local TempDataFolder="TempData"
 	local ResultFolder="result"
 	
+	local SHA1TableFolder="SHA1Table"	
+	local FinalResultDir="FinalResult"
+	
 	if [ -d $AllTestDataFolder ]
 	then
 		./${ScriptFolder}/run_SafeDelete.sh  $AllTestDataFolder
 	fi
+	
+	if [ -d $SHA1TableFolder ]
+	then
+		./${ScriptFolder}/run_SafeDelete.sh  $SHA1TableFolder
+	fi
+	
+	if [ -d $FinalResultDir ]
+	then
+		./${ScriptFolder}/run_SafeDelete.sh  $FinalResultDir
+	fi
+	
+	mkdir ${SHA1TableFolder}
+	mkdir ${FinalResultDir}
+		
 	
 	for Bitsream in ${TestBitStreamFolder}/*.264
 	do
@@ -48,9 +60,7 @@ runPrepareALlFolder()
 	done
 	
 }
-
  
-
 #parameter check! 
 if [ ! $# -eq 5  ]
 then
@@ -63,15 +73,11 @@ TestBitStreamFolder=$2
 CodecFolder=$3
 ScriptFolder=$4
 ConfigureFolder=$5
-
-
 echo "preparing All test data folders...."
 echo ""
 echo ""
 runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFolder
 echo ""
 echo ""
-
-
 
 
