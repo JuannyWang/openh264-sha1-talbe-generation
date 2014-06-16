@@ -1,4 +1,5 @@
 
+
 #!/bin/bash
  
 #***********************************************************
@@ -144,11 +145,11 @@ runEncodeOneCase()
 	BitStreamFile=${BitstreamTarget}
 	CaseCommand="${ConfigureFile}  	   \
 		-numl 1					       \
-		 -lconfig 0 layer2.cfg   	   \
+		-lconfig 0 layer2.cfg   	   \
 		-sw   ${PicW} -sh   ${PicH}    \
 		-dw 0 ${PicW} -dh 0 ${PicH}    \
 		-frout 0  30                   \
-		-ltarb 0  ${EncoderCommandValue[3]}  \
+		-ltarb 0  ${EncoderCommandValue[4]}  \
 		${EncoderCommandSet[0]}  ${EncoderCommandValue[0]}  \
 		${EncoderCommandSet[1]}  ${EncoderCommandValue[1]}  \
 		${EncoderCommandSet[2]}  ${EncoderCommandValue[2]}  \
@@ -165,20 +166,21 @@ runEncodeOneCase()
 		${EncoderCommandSet[13]} ${EncoderCommandValue[13]} "
 	echo ""
 	echo "case line is :"
-	EncoderCommand="./h264enc  ${CaseCommand} -bf   ${BitStreamFile}  -org   ${TestSequencePath}/${TestSequenceName} "
+	EncoderCommand="./h264enc  ${CaseCommand} -bf   ${BitStreamFile}  -org   ${TestSequencePath}/${TestSequenceName}  -drec 0 ${RecYUVFile}"
 	echo ${EncoderCommand}
+	
 	./h264enc   ${CaseCommand}        \
 		-bf     ${BitStreamFile}      \
 		-org    ${TestSequencePath}/${TestSequenceName} \
 		-drec 0 ${RecYUVFile}
 					
 }
-#usage?¨ºrunGetFileSize  $FileName
+#usage?¡§orunGetFileSize  $FileName
 runGetFileSize()
 {
 	if [ $#  -lt 1  ]
 	then 
-		echo "usage?¨ºrunGetFileSize  $FileName!"
+		echo "usage?¡§orunGetFileSize  $FileName!"
 		return 1
 	fi
 	
