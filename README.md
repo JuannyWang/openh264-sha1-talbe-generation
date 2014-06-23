@@ -40,11 +40,11 @@ other branch
 structure
 ---------
 -   AllTestData
-	    --Test space for each test bit stream, this folder will be generated in the early test stage.
-		Test space for each test bit stream looks like ./AllTestData/xxx.264, and each of test space 
-		contain the test codec, bit stream, case configure file and shell script file which copied from
-		./Codec, ./CaseConfigure, ./Scripts respectively.
-		For temp data generated during test, is under folder ./AllTestData/XXX.264/(issue, result and Temp)
+	--Test space for each test bit stream, this folder will be generated in the early test stage.
+	Test space for each test bit stream looks like ./AllTestData/xxx.264, and each of test space 
+	contain the test codec, bit stream, case configure file and shell script file which copied from
+	./Codec, ./CaseConfigure, ./Scripts respectively.
+	For temp data generated during test, is under folder ./AllTestData/XXX.264/(issue, result and Temp)
 	    
 -   BitStreamForTest
         --Test bit streams which copied from Cisco openh264 repository under folder ./res
@@ -55,22 +55,22 @@ structure
         If you want to used YUV directly, you can switch to branch YUVAsInput
 	 
 -   CaseConfigure
-	    --You can configure your test case by editing configure file ./CaseConfigure/case.cfg.
-        For more detail about how to generate test cases using case.cfg, please refer to script
-        file ./Scripts/run_GenerateCase.sh 
-		
+	--You can configure your test case by editing configure file ./CaseConfigure/case.cfg.
+	For more detail about how to generate test cases using case.cfg, please refer to script
+	file ./Scripts/run_GenerateCase.sh 
+
 -   Codec
-	    --openh264 codec: encoder, decoder and configure file layerXX.cfg welsenc.cfg, 
-        JM decoder;
-        for how to	update your test codec,please go to section  how to update you test codec
-		
+	--openh264 codec: encoder, decoder and configure file layerXX.cfg welsenc.cfg, 
+	JM decoder;
+	for how to	update your test codec,please go to section  how to update you test codec
+
 -   FinalResult
-	    --All test bit streams' test result will be copied to folder ./FinalResult.
-		XXX_AllCaseOutput.csv       contain the passe status of all cases(passed or unpassed etc.)
-	    XXX_AllCase_SHA1_Table.csv  contain the SHA1 string of those  passed cases
-		XXX_.TestLog    test log of each test bit stream
-		XXX_.Summary    test summary of each test bit stream
-		
+	--All test bit streams' test result will be copied to folder ./FinalResult.
+	XXX_AllCaseOutput.csv       contain the passe status of all cases(passed or unpassed etc.)
+	XXX_AllCase_SHA1_Table.csv  contain the SHA1 string of those  passed cases
+	XXX_.TestLog    test log of each test bit stream
+	XXX_.Summary    test summary of each test bit stream
+
 -   Scripts
 	    --the script files 
 	
@@ -80,17 +80,17 @@ structure
 how to update you test codec
 ----------------------------
 -   1. update your test codec manually
-	    build your private openh264, and copied  h264enc, h264dec, layer2.cfg, welsenc.cfg 
-	    to folder ./Codec manually.
+	build your private openh264, and copied  h264enc, h264dec, layer2.cfg, welsenc.cfg 
+	to folder ./Codec manually.
 -   2. update automatically
-	    just given your openh264 repository's directory, and run script file 
-		./run_UpdateCodecAndTestBitStream.sh  ${YourOpenH264Dir}
-		and the script file will complete below task
-		----enable macro for dump reconstructed YUV in codec/encoder/core/inc/as264_common.h
-		----build codec
-		----copy h264enc h264dec layer2.cfg welsenc.cfg to ./Codec
-		----copy test bit stream from openh264/res  to ./BitStreamForTest
-			
+	just given your openh264 repository's directory, and run script file 
+	./run_UpdateCodecAndTestBitStream.sh  ${YourOpenH264Dir}
+	and the script file will complete below task
+	----enable macro for dump reconstructed YUV in codec/encoder/core/inc/as264_common.h
+	----build codec
+	----copy h264enc h264dec layer2.cfg welsenc.cfg to ./Codec
+	----copy test bit stream from openh264/res  to ./BitStreamForTest
+		
 
 how to generate case
 --------------------
