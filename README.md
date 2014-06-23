@@ -1,36 +1,44 @@
-#about:
-    This model is part of Cisco openh264 project for encoder binary comparison test.
+
+Openh264 encoder test--SHA1 generate model
+==========================================
+about
+-----
+-   This model is part of Cisco openh264 project for encoder binary comparison test.
 	In this test, all cases of all test bit streams will be tested and check that whether 
 	the reconstructed YUV is the same with JM decoder's YUV. if yes, the test case 
 	will be marked as passed and SHA1 string will be generated, otherwise, marked as unpassed 
 	and no SHA1 string for this test case in SHA1 table file(XXX.264_AllCase_SHA1_Table.csv)
 	
-	The output of this test is those SHA1 table file in folder  ./SHA1Table.
+-	The output of this test is those SHA1 table file in folder  ./SHA1Table.
 	And the final test result can be found in folder ./FinalResult:
 	For those temp data generated during test, can be found ./AllTestData/xxx.264/
 	
-    For Cisco openh264 project,please refer to https://github.com/cisco/openh264. 
+-    For Cisco openh264 project,please refer to https://github.com/cisco/openh264. 
  
-#how to use:
-    step 1. update your test codec in folder ./Codec, for how to update, please refer to section 
-             "how to update you test codec";
+how to use
+----------
+	step 1. update your test codec in folder ./Codec, for how to update, please refer to section 
+	        "how to update you test codec";
     step 2. configure your test case if you do not use default test case. currently, base on the case.cfg,
             there are 1056 cases for test.
             for how to generate your personal test case, please refer to section "how to generate case"	
     step 3. run shell script file: ./run_Main.sh, ignore the warning info during the test.
-	    this step make take 10 minutes or may be  more time, it depends on how many cases you test and 
-	    how many test bit stream you used in the test
+	        this step make take 10 minutes or may be  more time, it depends on how many cases you test and 
+			how many test bit stream you used in the test
 	step 4. go to folder ./FinalResult t for the final test result
             SHA1 table files are under folder ./SHA1Table		
 
-#current branch:
+current branch
+--------------
       SingleLayer (local test, SHA1 table used in Cisoc openh264 test on travis)
 	  
-#other branch:
+other branch
+------------
       ----MultuLayer   3 spacial layer test (only local conformance test)
       ----YUVAsInput   YUV as test input.   (only local conformance test)
 	  
-#structure:
+structure
+---------
 	----AllTestData 
 	    Test space for each test bit stream, this folder will be generated in the early test stage.
 		Test space for each test bit stream looks like ./AllTestData/xxx.264, and each of test space 
@@ -69,7 +77,8 @@
 	----SHA1Table
 	    all SHA1 table of each test bit stream.
 
-#how to update you test codec:
+how to update you test codec
+----------------------------
      1. update your test codec manually
 	    build your private openh264, and copied  h264enc, h264dec, layer2.cfg, welsenc.cfg 
 	    to folder ./Codec manually.
@@ -83,13 +92,12 @@
 		----copy test bit stream from openh264/res  to ./BitStreamForTest
 			
 
-#how to generate case:
+how to generate case
+--------------------
 
 
 
-#how to verify  the test case:
-
-
+how to verify  the test case
 
 
 
