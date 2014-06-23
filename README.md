@@ -11,16 +11,15 @@
 	
     For Cisco openh264 project,please refer to https://github.com/cisco/openh264. 
  
- #how to use:
-
-	step 1. update your test codec in folder ./Codec, for how to update, please refer to section 
-	        "how to update you test codec";
+#how to use:
+    step 1. update your test codec in folder ./Codec, for how to update, please refer to section 
+             "how to update you test codec";
     step 2. configure your test case if you do not use default test case. currently, base on the case.cfg,
             there are 1056 cases for test.
             for how to generate your personal test case, please refer to section "how to generate case"	
     step 3. run shell script file: ./run_Main.sh, ignore the warning info during the test.
-	        this step make take 10 minutes or may be  more time, it depends on how many cases you test and 
-			how many test bit stream you used in the test
+	    this step make take 10 minutes or may be  more time, it depends on how many cases you test and 
+	    how many test bit stream you used in the test
 	step 4. go to folder ./FinalResult t for the final test result
             SHA1 table files are under folder ./SHA1Table		
 
