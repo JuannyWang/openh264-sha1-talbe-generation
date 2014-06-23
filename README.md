@@ -8,25 +8,25 @@ about
 	the reconstructed YUV is the same with JM decoder's YUV. if yes, the test case 
 	will be marked as passed and SHA1 string will be generated, otherwise, marked as unpassed 
 	and no SHA1 string for this test case in SHA1 table file(XXX.264_AllCase_SHA1_Table.csv)
-	
--	The output of this test is those SHA1 table file in folder  ./SHA1Table.
+
+-   The output of this test is those SHA1 table file in folder  ./SHA1Table.
 	And the final test result can be found in folder ./FinalResult:
 	For those temp data generated during test, can be found ./AllTestData/xxx.264/
-	
--    For Cisco openh264 project,please refer to https://github.com/cisco/openh264. 
+
+-   For Cisco openh264 project,please refer to https://github.com/cisco/openh264. 
  
 how to use
 ----------
-	step 1. update your test codec in folder ./Codec, for how to update, please refer to section 
-	        "how to update you test codec";
-    step 2. configure your test case if you do not use default test case. currently, base on the case.cfg,
-            there are 1056 cases for test.
-            for how to generate your personal test case, please refer to section "how to generate case"	
-    step 3. run shell script file: ./run_Main.sh, ignore the warning info during the test.
-	        this step make take 10 minutes or may be  more time, it depends on how many cases you test and 
-			how many test bit stream you used in the test
-	step 4. go to folder ./FinalResult t for the final test result
-            SHA1 table files are under folder ./SHA1Table		
+- step 1. update your test codec in folder ./Codec, for how to update, please refer to section 
+	      "how to update you test codec";
+- step 2. configure your test case if you do not use default test case. currently, base on the case.cfg,
+          there are 1056 cases for test.
+          for how to generate your personal test case, please refer to section "how to generate case"	
+- step 3. run shell script file: ./run_Main.sh, ignore the warning info during the test.
+	      this step make take 10 minutes or may be  more time, it depends on how many cases you test and 
+	      how many test bit stream you used in the test
+- step 4. go to folder ./FinalResult t for the final test result
+          SHA1 table files are under folder ./SHA1Table		
 
 current branch
 --------------
@@ -34,19 +34,19 @@ current branch
 	  
 other branch
 ------------
-      ----MultuLayer   3 spacial layer test (only local conformance test)
-      ----YUVAsInput   YUV as test input.   (only local conformance test)
+- MultuLayer   3 spacial layer test (only local conformance test)
+- YUVAsInput   YUV as test input.   (only local conformance test)
 	  
 structure
 ---------
-	----AllTestData 
+- AllTestData 
 	    Test space for each test bit stream, this folder will be generated in the early test stage.
 		Test space for each test bit stream looks like ./AllTestData/xxx.264, and each of test space 
 		contain the test codec, bit stream, case configure file and shell script file which copied from
 		./Codec, ./CaseConfigure, ./Scripts respectively.
 		For temp data generated during test, is under folder ./AllTestData/XXX.264/(issue, result and Temp)
 	    
-	----BitStreamForTest
+- BitStreamForTest
         Test bit streams which copied from Cisco openh264 repository under folder ./res
         If you want to add special test bit stream for test, you can produce bit stream via JM
         encoder(or h264dec) and copy it to folder ./BitStreamForTest
@@ -54,35 +54,35 @@ structure
          ./Scripts/run_BitStreamToYUV.sh
         If you want to used YUV directly, you can switch to branch YUVAsInput
 	 
-    ----CaseConfigure
+- CaseConfigure
 	    You can configure your test case by editing configure file ./CaseConfigure/case.cfg.
         For more detail about how to generate test cases using case.cfg, please refer to script
         file ./Scripts/run_GenerateCase.sh 
 		
-	----Codec
+- Codec
 	    openh264 codec: encoder, decoder and configure file layerXX.cfg welsenc.cfg, 
         JM decoder;
         for how to	update your test codec,please go to section  how to update you test codec
 		
-    ----FinalResult
+- FinalResult
 	    All test bit streams' test result will be copied to folder ./FinalResult.
 		XXX_AllCaseOutput.csv       contain the passe status of all cases(passed or unpassed etc.)
 	    XXX_AllCase_SHA1_Table.csv  contain the SHA1 string of those  passed cases
 		XXX_.TestLog    test log of each test bit stream
 		XXX_.Summary    test summary of each test bit stream
 		
-	----Scripts
+- Scripts
 	    the script files 
 	
-	----SHA1Table
+- SHA1Table
 	    all SHA1 table of each test bit stream.
 
 how to update you test codec
 ----------------------------
-     1. update your test codec manually
+- 1. update your test codec manually
 	    build your private openh264, and copied  h264enc, h264dec, layer2.cfg, welsenc.cfg 
 	    to folder ./Codec manually.
-	 2. update automatically
+- 2. update automatically
 	    just given your openh264 repository's directory, and run script file 
 		./run_UpdateCodecAndTestBitStream.sh  ${YourOpenH264Dir}
 		and the script file will complete below task
@@ -98,6 +98,5 @@ how to generate case
 
 
 how to verify  the test case
-
-
+---------------------------
 
