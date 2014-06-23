@@ -175,7 +175,7 @@ runEncodeOneCase()
 		-drec 0 ${RecYUVFile}
 					
 }
-#usage?¡§orunGetFileSize  $FileName
+#usage: runGetFileSize  $FileName
 runGetFileSize()
 {
 	if [ $#  -lt 1  ]
