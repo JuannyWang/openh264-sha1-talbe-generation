@@ -30,12 +30,12 @@ how to use
 
 current branch
 --------------
--    SingleLayer (local test, SHA1 table used in Cisoc openh264 test on travis)
+-    SingleLayer --local test, SHA1 table used in Cisoc openh264 test on travis
 	  
 other branch
 ------------
--   MultuLayer   3 spacial layer test (only local conformance test)
--   YUVAsInput   YUV as test input.   (only local conformance test)
+-   MultuLayer   --3 spacial layer test (only local conformance test)
+-   YUVAsInput   --YUV as test input.   (only local conformance test)
 	  
 structure
 ---------
