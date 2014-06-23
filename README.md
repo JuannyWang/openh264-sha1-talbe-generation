@@ -30,7 +30,7 @@ how to use
 
 current branch
 --------------
-    SingleLayer (local test, SHA1 table used in Cisoc openh264 test on travis)
+-    SingleLayer (local test, SHA1 table used in Cisoc openh264 test on travis)
 	  
 other branch
 ------------
@@ -40,14 +40,14 @@ other branch
 structure
 ---------
 -   AllTestData
-	    Test space for each test bit stream, this folder will be generated in the early test stage.
+	    --Test space for each test bit stream, this folder will be generated in the early test stage.
 		Test space for each test bit stream looks like ./AllTestData/xxx.264, and each of test space 
 		contain the test codec, bit stream, case configure file and shell script file which copied from
 		./Codec, ./CaseConfigure, ./Scripts respectively.
 		For temp data generated during test, is under folder ./AllTestData/XXX.264/(issue, result and Temp)
 	    
 -   BitStreamForTest
-        Test bit streams which copied from Cisco openh264 repository under folder ./res
+        --Test bit streams which copied from Cisco openh264 repository under folder ./res
         If you want to add special test bit stream for test, you can produce bit stream via JM
         encoder(or h264dec) and copy it to folder ./BitStreamForTest
         For how to transform bit stream into test YUV, please refer to script file 
@@ -55,27 +55,27 @@ structure
         If you want to used YUV directly, you can switch to branch YUVAsInput
 	 
 -   CaseConfigure
-	    You can configure your test case by editing configure file ./CaseConfigure/case.cfg.
+	    --You can configure your test case by editing configure file ./CaseConfigure/case.cfg.
         For more detail about how to generate test cases using case.cfg, please refer to script
         file ./Scripts/run_GenerateCase.sh 
 		
 -   Codec
-	    openh264 codec: encoder, decoder and configure file layerXX.cfg welsenc.cfg, 
+	    --openh264 codec: encoder, decoder and configure file layerXX.cfg welsenc.cfg, 
         JM decoder;
         for how to	update your test codec,please go to section  how to update you test codec
 		
 -   FinalResult
-	    All test bit streams' test result will be copied to folder ./FinalResult.
+	    --All test bit streams' test result will be copied to folder ./FinalResult.
 		XXX_AllCaseOutput.csv       contain the passe status of all cases(passed or unpassed etc.)
 	    XXX_AllCase_SHA1_Table.csv  contain the SHA1 string of those  passed cases
 		XXX_.TestLog    test log of each test bit stream
 		XXX_.Summary    test summary of each test bit stream
 		
 -   Scripts
-	    the script files 
+	    --the script files 
 	
 -   SHA1Table
-	    all SHA1 table of each test bit stream.
+	    --all SHA1 table of each test bit stream.
 
 how to update you test codec
 ----------------------------
@@ -94,9 +94,14 @@ how to update you test codec
 
 how to generate case
 --------------------
-
-
+-   Edit configure file ./CaseConfigure/case.cfg
+    using white space to separate  case  value  of test parameter 
+    eg: IntraPeriod:  -1   30  
+-   if you want to change the combination order of test parameter or anything else,
+     please refer to script file ./Scripts/run_GenerateCase.sh and change the script 
+	 if you want.
 
 how to verify  the test case
 ---------------------------
+-   please refer to script file ./Scripts/run_BitStreamValidateCheck.sh
 
