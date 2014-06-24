@@ -245,13 +245,13 @@ runSafeDelete()
 	if [  -d $PathInfo  ]
 	then
 		DeleteIterm=${FullPath}
-		echo "delete iterm is:  $DeleteIterm"
+		echo "delete file is:  $DeleteIterm"
 		rm -rf ${DeleteIterm}
 	elif [ -f $PathInfo ]
 	then 
 		FileName=`runGetFileName ${PathInfo}`
 		DeleteIterm="${FullPath}/${FileName}"
-		echo "delete iterm is:  $DeleteIterm"	
+		echo "delete folder is is:  $DeleteIterm"	
 		rm  ${DeleteIterm}
 	fi	
 	
@@ -261,11 +261,9 @@ runSafeDelete()
 
 PathInfo=$1
 echo ""
-echo "deleting ......."
-echo ""
 runSafeDelete $PathInfo
 echo ""
-echo ""
+
 
 
 
