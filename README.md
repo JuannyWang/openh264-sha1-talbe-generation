@@ -9,7 +9,7 @@ about
 	will be marked as passed and SHA1 string will be generated, otherwise, marked as unpassed 
 	and no SHA1 string for this test case in SHA1 table file(XXX.264_AllCase_SHA1_Table.csv)
 
--   The output of this test is those SHA1 table file in folder  ./SHA1Table.
+-   The output of the test are those SHA1 table files in folder  ./SHA1Table.
 	And the final test result can be found in folder ./FinalResult:
 	For those temp data generated during test, can be found ./AllTestData/xxx.264/
 
@@ -79,6 +79,12 @@ structure
 
 how to update you test codec
 ----------------------------
+-   0. no matter you choose 1 or 2, the macro "WELS_TESTBED" must be enable,so that the reconstrution YUV file 
+       will be dumped during the encoding proccess. 
+       if you choose 1, you need to open the macro by adding "#define WELS_TESTBED" in file 
+       codec/encoder/core/inc/as264_common.h;
+       if you choose 2, auto script will do it automatically.
+
 -   1. update your test codec manually
 	build your private openh264, and copied  h264enc, h264dec, layer2.cfg, welsenc.cfg 
 	to folder ./Codec manually.
