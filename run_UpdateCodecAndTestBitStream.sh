@@ -1,17 +1,14 @@
 #!/bin/bash
 
 
-#!/bin/bash
-#***************************************************************************************
-#Encoder bit stream SHA1 table generation model:
+HA1 table generation model:
 #      This model is part of Cisco openh264 project for encoder binary comparison test.
-#      For Cisco openh264 project,please refer to https://github.com/cisco/openh264. 
-#      SHA1 string is generate once the h264enc's reconstructed YUV fileis the same with 
-#      JM decoder's decoded YUV file.
-#
+#      The output of this test are those SHA1 tables for all test bit stream, and will 
+#      be used in openh264/test/encoder_binary_comparison/SHA1Table.
+#     
 #      1.Test case configure file: ./CaseConfigure/case.cfg.
 #    
-#      2.Test bit stream file: ./BitStreamForTest/*.264
+#      2.Test bit stream files: ./BitStreamForTest/*.264
 # 
 #      3.Test result: ./FinalResult  and ./SHA1Table 
 #
@@ -28,8 +25,6 @@
 #date:  10/06/2014 Created
 #***************************************************************************************
 
-
-#useage:  runYUVDumpMacroOpen   \${Openh264Dir}
 runYUVDumpMacroOpen()
 {
 	if [ ! $# -eq 1 ]
