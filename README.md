@@ -40,6 +40,7 @@ other branch
 structure
 ---------
 -   AllTestData
+       
 	--Test space for each test bit stream, this folder will be generated in the early test stage.
 	Test space for each test bit stream looks like ./AllTestData/xxx.264, and each of test space 
 	contain the test codec, bit stream, case configure file and shell script file which copied from
@@ -79,7 +80,7 @@ structure
 
 how to update you test codec
 ----------------------------
--   0. no matter you choose 1 or 2, the macro "WELS_TESTBED" must be enable,so that the reconstrution YUV file 
+-    no matter you choose 1 or 2, the macro "WELS_TESTBED" must be enable,so that the reconstrution YUV file 
        will be dumped during the encoding proccess. 
        if you choose 1, you need to open the macro by adding "#define WELS_TESTBED" in file 
        codec/encoder/core/inc/as264_common.h;
