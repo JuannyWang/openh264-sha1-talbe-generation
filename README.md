@@ -80,14 +80,18 @@ structure
 	XXX_.Summary    test summary of each test bit stream
 
 -   Scripts
-	    --the script files 
+   
+    the script files 
 	
 -   SHA1Table
-	    --all SHA1 table of each test bit stream.
+   
+    all SHA1 table of each test bit stream.
+
 
 how to update you test codec
 ----------------------------
--   0.  no matter you choose 1 or 2, the macro "WELS_TESTBED" must be enable,so that the reconstrution YUV file 
+
+-   0. no matter you choose 1 or 2, the macro "WELS_TESTBED" must be enable,so that the reconstrution YUV file 
        will be dumped during the encoding proccess. 
        if you choose 1, you need to open the macro by adding "#define WELS_TESTBED" in file 
        codec/encoder/core/inc/as264_common.h;
