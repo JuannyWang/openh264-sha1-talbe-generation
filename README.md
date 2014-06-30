@@ -39,17 +39,19 @@ other branch
 	  
 structure
 ---------
+
 -   AllTestData
-       
-	--Test space for each test bit stream, this folder will be generated in the early test stage.
+    -----------
+	Test space for each test bit stream, this folder will be generated in the early test stage.
 	Test space for each test bit stream looks like ./AllTestData/xxx.264, and each of test space 
 	contain the test codec, bit stream, case configure file and shell script file which copied from
-	./Codec, ./CaseConfigure, ./Scripts respectively.
-	For temp data generated during test, is under folder ./AllTestData/XXX.264/(issue, result and Temp)
+	./Codec, ./CaseConfigure, ./Scripts respectively.For temp data generated during test, is under 
+	folder   ./AllTestData/XXX.264/(issue, result and Temp)
+	
 	    
 -   BitStreamForTest
 
-        --Test bit streams which copied from Cisco openh264 repository under folder ./res
+        Test bit streams which copied from Cisco openh264 repository under folder ./res
         If you want to add special test bit stream for test, you can produce bit stream via JM
         encoder(or h264dec) and copy it to folder ./BitStreamForTest
         For how to transform bit stream into test YUV, please refer to script file 
