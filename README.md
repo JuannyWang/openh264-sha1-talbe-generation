@@ -48,6 +48,7 @@ structure
 	For temp data generated during test, is under folder ./AllTestData/XXX.264/(issue, result and Temp)
 	    
 -   BitStreamForTest
+
         --Test bit streams which copied from Cisco openh264 repository under folder ./res
         If you want to add special test bit stream for test, you can produce bit stream via JM
         encoder(or h264dec) and copy it to folder ./BitStreamForTest
