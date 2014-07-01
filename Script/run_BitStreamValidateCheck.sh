@@ -1,4 +1,6 @@
-HA1 table generation model:
+#!/bin/bash
+#***************************************************************************************
+# SHA1 table generation model:
 #      This model is part of Cisco openh264 project for encoder binary comparison test.
 #      The output of this test are those SHA1 tables for all test bit stream, and will 
 #      be used in openh264/test/encoder_binary_comparison/SHA1Table.
@@ -27,7 +29,7 @@ runJMCheck()
 	echo ".............JM decoder log.............">>${CheckLogFile}
 	echo "">>${CheckLogFile}
 	
-	./ldecod.exe -p InputFile="${BitStreamFile}"  -p OutputFile="${JMDecYUVFile}">>${CheckLogFile}
+	./JMDecoder -p InputFile="${BitStreamFile}"  -p OutputFile="${JMDecYUVFile}">>${CheckLogFile}
     let "JMDecodeFlag=$?"
 	if [ ! ${JMDecodeFlag}  -eq 0  ]
 	then
@@ -196,4 +198,5 @@ DecYUVFile=$3
 RecYUVFile=$4
 IssueDataPath=$5
 runBitStreamVerify  ${BitStreamFile}  ${JMDecYUVFile}  ${DecYUVFile}  ${RecYUVFile} ${IssueDataPath}
+
 

@@ -36,7 +36,7 @@
 	
 	local ConfigureFile=$1
 	
-	if [  ! -f ${} ]
+	if [  ! -f ${ConfigureFile} ]
 	then
 		echo "Configure file not exist!, please double check in "
 		echo " usage may looks like:   ./run_Main.sh  ../CaseConfigure/case.cfg "

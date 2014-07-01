@@ -51,19 +51,22 @@ runGlobalVariableInitial()
 	AllCaseSHATableFile="${FinalResultPath}/${TestSequenceName}_AllCase_SHA1_Table.csv"
 	AllCaseConsoleLogFile="${FinalResultPath}/${TestSequenceName}.TestLog"
 	CaseSummaryFile="${FinalResultPath}/${TestSequenceName}.Summary"
+	
 	echo	"BitMatched Status,SHA-1 Value,    \
-			MD5String, BitStreamSize, YUVSize,  \
+			MD5String, BitStreamSize, YUVSize, \
 			-frms, -numtl, -scrsig, -rc,       \
 			-tarb, -lqp 0, -iper,              \
 			-slcmd 0,-slcnum 0, -thread,       \
-			-ltr, -db, -MaxNalSize  ">${AllCasePassStatusFile}
+			-ltr, -db, -MaxNalSize, -denois,   \
+			-scene,     -bgd,    -aq">${AllCasePassStatusFile}
 			
 	echo	"SHA-1 Value, 					   \
-			MD5String, BitStreamSize, YUVSize,  \
+			MD5String, BitStreamSize, YUVSize, \
 			-frms, -numtl, -scrsig, -rc,       \
 			-tarb, -lqp 0, -iper,              \
 			-slcmd 0,-slcnum 0, -thread,       \
-			-ltr, -db, -MaxNalSize  ">${AllCaseSHATableFile}			
+			-ltr, -db, -MaxNalSize,-denois,    \
+			-scene,     -bgd,    -aq">${AllCaseSHATableFile}			
 			
 	#intial Commandline parameters
 	declare -a EncoderCommandSet
@@ -103,7 +106,11 @@ runEncoderCommandInital()
 					   -thread     \
 					   -ltr        \
 					   -db         \
-					   "-nalsize ")
+					   "-nalsize " \
+					   -denois     \
+					   -scene      \
+					   -bgd        \
+					   -aq)
 					   
 	EncoderCommandName=(FrEcoded     \
 						NumTempLayer \
@@ -117,8 +124,12 @@ runEncoderCommandInital()
 						ThrMum       \
 						LTR          \
 						LFilterIDC   \
-						MaxNalSize )
-	EncoderCommandValue=(0 0 0 0 0   0 0 0 0 0  0 0  0 0)
+						MaxNalSize   \
+						DenoiseFlag  \
+						SceneChangeFlag \
+						BackgroundFlag  \
+						AQFlag) 
+	EncoderCommandValue=(0 0 0 0 0     0 0 0 0 0     0 0 0 0 0   0  0)
 	NumParameter=${#EncoderCommandSet[@]}
 	
 }	
@@ -177,10 +188,14 @@ runEncodeOneCase()
 		${EncoderCommandSet[10]} ${EncoderCommandValue[10]} \
 		${EncoderCommandSet[11]} ${EncoderCommandValue[11]} \
 		${EncoderCommandSet[12]} ${EncoderCommandValue[12]} \
-		${EncoderCommandSet[13]} ${EncoderCommandValue[13]} "
+		${EncoderCommandSet[13]} ${EncoderCommandValue[13]} \
+		${EncoderCommandSet[14]} ${EncoderCommandValue[14]} \
+		${EncoderCommandSet[15]} ${EncoderCommandValue[15]} \
+		${EncoderCommandSet[16]} ${EncoderCommandValue[16]}"
+		
 	echo ""
 	echo "case line is :"
-	EncoderCommand="./h264enc  ${CaseCommand} -bf   ${BitStreamFile}  -org   ${TestSequencePath}/${TestSequenceName}  -drec 0 ${RecYUVFile}"
+	EncoderCommand="./h264enc  ${CaseCommand}  -bf   ${BitStreamFile}  -org   ${TestSequencePath}/${TestSequenceName}  -drec 0 ${RecYUVFile}"
 	echo ${EncoderCommand}
 	
 	./h264enc   ${CaseCommand}        \
