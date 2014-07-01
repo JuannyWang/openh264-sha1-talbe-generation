@@ -1,7 +1,6 @@
 #!/bin/bash
-
-
-HA1 table generation model:
+#***************************************************************************************
+# SHA1 table generation model:
 #      This model is part of Cisco openh264 project for encoder binary comparison test.
 #      The output of this test are those SHA1 tables for all test bit stream, and will 
 #      be used in openh264/test/encoder_binary_comparison/SHA1Table.
@@ -24,7 +23,6 @@ HA1 table generation model:
 #
 #date:  10/06/2014 Created
 #***************************************************************************************
-
 runYUVDumpMacroOpen()
 {
 	if [ ! $# -eq 1 ]
@@ -43,7 +41,6 @@ runYUVDumpMacroOpen()
 		echo "file ${File} does not exist! when tring to open YUV dump macro "
 		return 1
 	fi
-
 	echo "">${TempFile}
 	while read line
 	do
@@ -60,13 +57,10 @@ runYUVDumpMacroOpen()
 	
 	rm -f ${File}
 	mv  ${TempFile}  ${File}
-
 }
-
 #useage: ./runBuildCodec  ${Openh264Dir}
 runBuildCodec()
 {
-
 	if [ ! $# -eq 1 ]
 	then
 		echo "useage: ./runBuildCodec  \${Openh264Dir}"
@@ -102,11 +96,9 @@ runBuildCodec()
 		return 0
 	fi
 }
-
 #useage:  runCopyFile  ${Openh264Dir}
 runCopyFile()
 {
-
 	if [ ! $# -eq 1 ]
 	then
 		echo "useage:  runCopyFile  \${Openh264Dir}"
@@ -124,10 +116,7 @@ runCopyFile()
 	cp -f ${OpenH264Dir}/testbin/welsenc.cfg     ${CodecDir}
 	
 	cp -f ${OpenH264Dir}/res/*.264     ${BitStreamFileDir}
-
 }
-
-
 #useage: ./run_CodecBitStreamUpdate.sh   ${Openh264Dir}
 runMain()
 {
@@ -188,9 +177,7 @@ runMain()
 	fi	
 	
 	return 0
-
 }
-
 Openh264Dir=$1
 runMain ${Openh264Dir}
 

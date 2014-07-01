@@ -1,23 +1,25 @@
-
-
 #!/bin/bash
-#***************************
-#   this file is used for openh264 project 
-#   encoder conformance test under github and travis integration
-#   
-#   currently bitstream instead of YUV sequences are upload to github repository
-#   in order to do the conformance test,
-#   firstly we need to decode bitstream and use decoded yuv as test sequence; 
-#   secondly, generate test cases based on the resolution of this yuv;
-#   thirdly, encode the yuv case by case and generate the sha-1 value of each encoded bitstream
-#   after above step, the sha-1 table of each test sequence is used in gtest framework to verify 
-#   every checked in code is conformance with JM
+#***************************************************************************************
+# SHA1 table generation model:
+#      This model is part of Cisco openh264 project for encoder binary comparison test.
+#      The output of this test are those SHA1 tables for all test bit stream, and will 
+#      be used in openh264/test/encoder_binary_comparison/SHA1Table.
+#     
+#      1.Test case configure file: ./CaseConfigure/case.cfg.
 #    
-#    this file is for case generation 
-#              huashi@cisco.com    04/04/2014
-#     usage: ./run_*.sh  $Case.cfg   $TestSequence  $OutputCaseFile 
-#     eg:      run_GenerateCase.sh  case.cfg  ABC_1920X1080.yuv  AllCase.csv
-#**************************
+#      2.Test bit stream files: ./BitStreamForTest/*.264
+# 
+#      3.Test result: ./FinalResult  and ./SHA1Table 
+#
+#      4 For more detail, please refer to READE.md
+#      
+# brief:
+#      --generate  case based on cade configure file
+#      usage: ./run_GenerateCase.sh  $Case.cfg   $TestSequence  $OutputCaseFile 
+#      eg:      run_GenerateCase.sh  case.cfg  ABC_1920X1080.yuv  AllCase.csv
+#
+#date:  10/06/2014 Created
+#***************************************************************************************
 #usage  runGetTargetBitRate  $TestSequenceName
 #eg:    input:  runGetTargetBitRate  test_1920X1080.yuv
 #       output:    1500  800 300   100    (test bit rate point)

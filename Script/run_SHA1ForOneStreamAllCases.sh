@@ -1,16 +1,30 @@
-
-
 #!/bin/bash
- 
-#***********************************************************
-#Test all cases for one sequence to check that the target codec is the same as benchmark codec
-#output info lovated in ../AllTestData/${TestSetIndex}/result/
-#         pass case number, unpass case number total case number
-#         ${TestSetIndex}_${TestSequenceName}_AllCaseOutput.csv
-#         ${AllCaseConsoleLogFile}
-#         ${CaseSummaryFile}
-#         ${FlagFile}
-#***********************************************************
+#***************************************************************************************
+# SHA1 table generation model:
+#      This model is part of Cisco openh264 project for encoder binary comparison test.
+#      The output of this test are those SHA1 tables for all test bit stream, and will 
+#      be used in openh264/test/encoder_binary_comparison/SHA1Table.
+#     
+#      1.Test case configure file: ./CaseConfigure/case.cfg.
+#    
+#      2.Test bit stream files: ./BitStreamForTest/*.264
+# 
+#      3.Test result: ./FinalResult  and ./SHA1Table 
+#
+#      4 For more detail, please refer to READE.md
+#      
+# brief:
+#       --Test all cases for one sequence to check that the target codec is the same as benchmark codec
+#       --output info can be found  in ../AllTestData/${TestSetIndex}/result/
+#            pass case number, unpass case number total case number
+#            ${TestSetIndex}_${TestSequenceName}_AllCaseOutput.csv
+#            ${AllCaseConsoleLogFile}
+#            ${CaseSummaryFile}
+#            ${FlagFile}
+#      
+#
+#date:  10/06/2014 Created
+#***************************************************************************************
 runGlobalVariableInitial()
 {
     #TestDataSpaceDir=../AllTestData  CurrentDir=../AllTestData/TestSetXXX/***.yuv   eg ../AllTestData/TestSetCIF/basketball.yuv
@@ -180,7 +194,7 @@ runGetFileSize()
 {
 	if [ $#  -lt 1  ]
 	then 
-		echo "usage?¡§orunGetFileSize  $FileName!"
+		echo "usage??¡ìunGetFileSize  $FileName!"
 		return 1
 	fi
 	
@@ -436,6 +450,4 @@ runMain()
 TestYUVName=$1
 AllCaseFile=$2
 runMain  ${TestYUVName}   ${AllCaseFile}
-
-
 

@@ -1,9 +1,25 @@
-
 #!/bin/bash
-
-
-
-
+#***************************************************************************************
+# SHA1 table generation model:
+#      This model is part of Cisco openh264 project for encoder binary comparison test.
+#      The output of this test are those SHA1 tables for all test bit stream, and will 
+#      be used in openh264/test/encoder_binary_comparison/SHA1Table.
+#     
+#      1.Test case configure file: ./CaseConfigure/case.cfg.
+#    
+#      2.Test bit stream files: ./BitStreamForTest/*.264
+# 
+#      3.Test result: ./FinalResult  and ./SHA1Table 
+#
+#      4 For more detail, please refer to READE.md
+#      
+# brief:
+#      --decode bit stream and  transform into test YUV
+#      --usage: run_BitStreamToYUV.sh   ${BitStreamName}
+#      
+#
+#date:  10/06/2014 Created
+#***************************************************************************************
 #usage:  run_ParseDecoderInfo   $Decoder_LogFile  
 #eg:     input:    run_ParseDecoderInfo   test.264.log
 #        output    1024  720  
@@ -14,29 +30,22 @@ run_ParseDecoderInfo()
 		echo "usage:  run_ParseDecoderInfo  \$Decoder_LogFile"
 		return 1
 	fi
-
 	local LogFile=$1
 	local Width=""
 	local Height=""
-
 	while read line
 	do
 		if [[  $line =~  "iWidth"   ]]
 		then
 			Width=`echo $line | awk 'BEGIN  {FS="[:\n]"} {print $2}'`
 		fi
-
 		if [[  $line =~  "height"   ]]
 		then
 		   Height=`echo $line | awk 'BEGIN  {FS="[:\n]"} {print $2}'`
 		fi
 	done < ${LogFile}
-
 	echo "${Width}  ${Height}"
-
 }
-
-
 #usage: run_BitStream2YUV  $BitstreamName  $OutputYUVName $LogFile 
 run_BitStream2YUV()
 {
@@ -45,7 +54,6 @@ run_BitStream2YUV()
 		echo "usage: run_BitStream2YUV  \$BitstreamName \$OutputYUVName \$LogFile   "
 		return 1
 	fi
-
 	local BitStreamName=$1
 	local OutputYUVNAMe=$2
 	local LogFile=$3
@@ -60,19 +68,15 @@ run_BitStream2YUV()
 	./h264dec  ${BitStreamName}  ${OutputYUVNAMe} 2> ${LogFile}
 	
 	return 0
-
 }
-
 #usage: run_RegularizeYUVName $BitstreamName $OutputYUVName $LogFile 
 run_RegularizeYUVName()
 {
-
  	if [ ! $# -eq 3 ]
 	then
 		echo "usage: run_RegularizeYUVName  \$BitstreamName  \$OutputYUVName \$LogFile "
 		return 1
 	fi
-
 	local BitStreamName=$1
 	local OrignName=$2
 	local LogFile=$3
@@ -84,17 +88,13 @@ run_RegularizeYUVName()
 	
 	BitStreamName=`echo ${BitStreamName} | awk 'BEGIN {FS="/"} {print $NF}'`
 	RegularizedYUVName="${BitStreamName}_${aDecodedYUVInfo[0]}x${aDecodedYUVInfo[1]}.yuv"
-
     mv -f 	${OrignName}   ${RegularizedYUVName}
 	echo ""
 	echo "file :  ${OrignName}   has been renamed as :${RegularizedYUVName}"	
 	echo ""
 	
 	return 0
-
 }
-
-
 #usage: runMain  ${BitStreamName}
 runMain()
 {
@@ -126,13 +126,6 @@ runMain()
    
 	return 0
 }
-
-
 BitStreamFile=$1
 runMain  ${BitStreamFile}
-
-
-
-
-
 

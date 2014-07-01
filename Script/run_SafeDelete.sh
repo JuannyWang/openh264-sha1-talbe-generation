@@ -1,16 +1,29 @@
-
 #!/bin/bash
-
-#******************************************************************************************************
-#  usage:     ./run_SafeDelere.sh  $DeleteItermPath
-#   eg:    1  ./run_SafeDelere.sh  tempdata.info   --->delete only one file
-#   eg:    2  ./run_SafeDelere.sh  ../TempDataFolder   --->delete entire folder
-#			  ./run_SafeDelere.sh  /opt/TempData/ABC
-#                                  ../../../ABC
-#                                  ABC
-#******************************************************************************************************
-
-
+#***************************************************************************************
+# SHA1 table generation model:
+#      This model is part of Cisco openh264 project for encoder binary comparison test.
+#      The output of this test are those SHA1 tables for all test bit stream, and will 
+#      be used in openh264/test/encoder_binary_comparison/SHA1Table.
+#     
+#      1.Test case configure file: ./CaseConfigure/case.cfg.
+#    
+#      2.Test bit stream files: ./BitStreamForTest/*.264
+# 
+#      3.Test result: ./FinalResult  and ./SHA1Table 
+#
+#      4 For more detail, please refer to READE.md
+#      
+# brief:
+#      --delete file or entire folder, instead of using "rm -rf ", we use this script to delete file or folder 
+#      -- usage:   ./run_SafeDelere.sh  $DeleteItermPath
+#                     eg:    1  ./run_SafeDelere.sh    tempdata.info   --->delete only one file
+#                     eg:    2  ./run_SafeDelere.sh    ../TempDataFolder   --->delete entire folder
+#			                     ./run_SafeDelere.sh   /opt/TempData/ABC
+#                                                      ../../../ABC
+#                                                      ABC
+#     
+#date:  10/06/2014 Created
+#***************************************************************************************
 #******************************************************************************************************
 #usage: runGetItermInfo  $FilePath
 runGetFileName()
@@ -42,9 +55,6 @@ runGetFileName()
 	 fi	 
 	 
 }
-
-
-
 #******************************************************************************************************
 #usage:  runGetFileFullPath  $FilePathInfo 
 #eg:  current path is /opt/VideoTest/openh264/ABC
@@ -86,9 +96,6 @@ runGetFileFullPath()
 		return 0     
 	 fi 
 }
-
-
-
 #******************************************************************************************************
 #usage:  runGetFolderFullPath  $FolderPathInfo 
 #eg:  current path is /opt/VideoTest/openh264/ABC
@@ -133,8 +140,6 @@ runGetFolderFullPath()
 	 fi
 	 
 }
-
-
 #******************************************************************************************************
 #usage: runUserNameCheck  $whoami
 runUserNameCheck()
@@ -159,10 +164,7 @@ runUserNameCheck()
 		echo ""
 		return 0
 	fi
-
 }
-
-
 #******************************************************************************************************
 #usage:  runFolderLocationCheck  $FullPath
 runFolderLocationCheck()
@@ -176,7 +178,6 @@ runFolderLocationCheck()
 	
 	local Location=$1
 	local FileDirDepth=`echo ${Location} | awk 'BEGIN {FS="/"} {print NF}'`
-
 	
 	#for other non-project folder data protection
 	#eg /opt/VideoTest/deleteiterm depth=4
@@ -191,10 +192,7 @@ runFolderLocationCheck()
 	fi
 		
 	return 0
-
 }
-
-
 #******************************************************************************************************
 #usage runSafeDelete $Pathinfo
 runSafeDelete()
@@ -231,9 +229,6 @@ runSafeDelete()
 		echo "detected by run_SafeDelere.sh"
 		return 1
 	fi
-	echo ""
-	echo "FullPath is ${FullPath}"
-
 	#location  validity check
 	runFolderLocationCheck ${FullPath}
 	if [ ! $? -eq 0 ]
@@ -245,27 +240,20 @@ runSafeDelete()
 	if [  -d $PathInfo  ]
 	then
 		DeleteIterm=${FullPath}
-		echo "delete folder is:  $DeleteIterm"
+		echo "deleted folder is:  $DeleteIterm"
 		rm -rf ${DeleteIterm}
 	elif [ -f $PathInfo ]
 	then 
 		FileName=`runGetFileName ${PathInfo}`
 		DeleteIterm="${FullPath}/${FileName}"
-		echo "delete file is is:  $DeleteIterm"	
+		echo "deleted file is is:  $DeleteIterm"	
 		rm  ${DeleteIterm}
 	fi	
 	
-
 }
-
-
 PathInfo=$1
 echo ""
 runSafeDelete $PathInfo
 echo ""
-
-
-
-
 
 
