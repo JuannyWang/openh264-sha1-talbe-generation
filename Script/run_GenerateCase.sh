@@ -99,7 +99,7 @@ runGlobalVariableInital()
 	let " FramesToBeEncoded = 0"
 	let " MaxNalSize = 0"
 	declare -a  NumTempLayer
-	declare -a  ScreenContentSignal
+	declare -a  UsageType
 	declare -a  RCMode
 	declare -a  IntraPeriod
 	declare -a  TargetBitrate
@@ -110,6 +110,12 @@ runGlobalVariableInital()
 	declare -a  MultipleThreadIdc
 	declare -a  EnableLongTermReference
 	declare -a  LoopFilterDisableIDC 
+	
+	declare -a  EnableDenoise
+	declare -a  EnableSceneChangeDetection
+	declare -a  EnableBackgroundDetection
+	declare -a  EnableAdaptiveQuantization
+	
 	#generate test cases and output to case file
 	casefile=${OutputCaseFile}
 	casefile_01=${OutputCaseFile}_01.csv
@@ -132,9 +138,9 @@ runParseCaseConfigure()
 		if [[ "$command" =~ ^FramesToBeEnc  ]]
 		then
 			FramesToBeEncoded=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
-		elif [[ "$command" =~ ^ScreenContentSignal ]]
+		elif [[ "$command" =~ ^UsageType ]]
 		then
-			ScreenContentSignal=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
+			UsageType=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
 		elif [[ "$command" =~ ^TemporalLayerNum ]]
 		then
 			NumTempLayer=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
@@ -165,6 +171,18 @@ runParseCaseConfigure()
 		elif [[ "$command" =~ ^InitialQP ]]
 		then
 			InitialQP=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
+		elif [[ "$command" =~ ^EnableDenoise ]]
+		then
+			EnableDenoise=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
+		elif [[ "$command" =~ ^EnableSceneChangeDetection ]]
+		then
+			EnableSceneChangeDetection=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
+		elif [[ "$command" =~ ^EnableBackgroundDetection ]]
+		then
+			EnableBackgroundDetection=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
+		elif [[ "$command" =~ ^EnableAdaptiveQuantization ]]
+		then
+			EnableAdaptiveQuantization=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
 		fi
 	done <$ConfigureFile
 	
@@ -174,7 +192,7 @@ runFirstStageCase()
 {
 	for NumLayer in ${NumTempLayer[@]}
 	do
-		for ScreenSignal in ${ScreenContentSignal[@]}
+		for ScreenSignal in ${UsageType[@]}
 		do
 			for RCModeIndex in ${RCMode[@]}
 			do
@@ -210,10 +228,7 @@ runFirstStageCase()
 }
 ##second stage for case generation
 runSecondStageCase()
-{
-	local Flag=""
-	let "Flag=0"
-	
+{	
 	while read FirstStageCase
 	do
 		for IntraPeriodIndex in ${IntraPeriod[@]}
@@ -240,18 +255,8 @@ runSecondStageCase()
 				for SlcNum in ${SliceNumber[@]}
 				do
 					for ThreadNum in ${ThreadNumber[@]}
-					do					
-						if [[ $FirstStageCase =~ ^-1  ]]
-						then
-							let "Flag=0"
-						elif [[ $FirstStageCase =~ ^[0-9]  ]]
-						then
-							let "Flag=0"
-						else
-							let "Flag=1"
-						fi
-						
-						if [ $Flag  -eq 0 ]
+					do											
+						if  [[ $FirstStageCase =~ ^[-0-9]  ]]
 						then
 							echo   "$FirstStageCase,\
 									$IntraPeriodIndex,\
@@ -268,49 +273,56 @@ runSecondStageCase()
 #the third stage for case generation
 runThirdStageCase()
 {
-	local Flag=""
 	local SliceMd=""
 	local ActualNalSize=""
 	
+	local DenoiseFlag=""
+	local SceneChangeFlag=""
+	local BackgroundFlag=""
+	local AQFlag=""
+		
 	declare -a CaseInfo
-	let "Flag=0"
-	
-	
+		
 	while read SecondStageCase
 	do
-		
-		for LTRFlag in ${EnableLongTermReference[@]}
-		do
-			for LoopfilterIndex in ${LoopFilterDisableIDC[@]}
+		if [[ $SecondStageCase =~ ^[-0-9]  ]]
+		then	
+			for LTRFlag in ${EnableLongTermReference[@]}
 			do
-				if [[ $SecondStageCase =~ ^-1  ]]
-				then
-					let "Flag=0"
-				elif [[ $SecondStageCase =~ ^[0-9]  ]]
-				then
-					let "Flag=0"
-				else
-					let "Flag=1"
-				fi
-				
-				if [ $Flag  -eq 0 ]
-				then
-					CaseInfo=(`echo $SecondStageCase | awk 'BEGIN {FS=","} {for(i=1;i<=NF;i++) printf("%s  ", $i)}'`)
-					SliceMd=${CaseInfo[7]}
-					if [  $SliceMd -eq 4  ]
-					then
-						let "ActualNalSize= ${MaxNalSize}"
-					else
-						let "ActualNalSize= 0"
-					fi							
-				
-					echo "$SecondStageCase,\
-						  $LTRFlag,\
-						  $LoopfilterIndex,\
-						  $ActualNalSize">>$casefile
-				fi		
+				for LoopfilterIndex in ${LoopFilterDisableIDC[@]}
+				do				
+	                for  DenoiseFlag in ${EnableDenoise[@]}
+					do
+						for  SceneChangeFlag in ${EnableSceneChangeDetection[@]}
+						do
+							for  BackgroundFlag in ${EnableBackgroundDetection[@]}
+							do
+								for  AQFlag in ${EnableAdaptiveQuantization}
+								do
+									CaseInfo=(`echo $SecondStageCase | awk 'BEGIN {FS=","} {for(i=1;i<=NF;i++) printf("%s  ", $i)}'`)
+									SliceMd=${CaseInfo[7]}
+									if [  $SliceMd -eq 4  ]
+									then
+										let "ActualNalSize= ${MaxNalSize}"
+									else
+										let "ActualNalSize= 0"
+									fi							
+								
+									echo "$SecondStageCase,\
+										  $LTRFlag,\
+										  $LoopfilterIndex,\
+										  $ActualNalSize,\
+										  ${DenoiseFlag},\
+										  ${SceneChangeFlag},\
+										  ${BackgroundFlag},\
+										  ${AQFlag}">>$casefile
+								done					
+							done												
+						done
+					done						
+				done
 			done
-		done
+		fi
 	done <$casefile_02
 }
 #only for test
@@ -319,7 +331,7 @@ runOutputParseResult()
 	echo "all case info has been  output to file $casefile "
 	echo "Frames=           $FramesToBeEncoded"
 	echo "NumTempLayer=     ${NumTempLayer[@]}"
-	echo "ScreenContentSignal= ${ScreenContentSignal[@]}"
+	echo "UsageType= ${UsageType[@]}"
 	echo "MaxNalSize=        $MaxNalSize"
 	echo "RCMode=           ${RCMode[@]}"
 	echo "TargetBitrate=    ${TargetBitrate[@]}"
@@ -331,12 +343,17 @@ runOutputParseResult()
 	echo "MultipleThreadIdc= ${MultipleThreadIdc[@]}"
 	echo "EnableLongTermReference=${EnableLongTermReference[@]}"
 	echo "LoopFilterDisableIDC=   ${LoopFilterDisableIDC[@]}"
+	
+	echo "EnableDenoise=                ${EnableDenoise[@]}"
+	echo "EnableSceneChangeDetection=   ${EnableSceneChangeDetection[@]}"
+	echo "EnableBackgroundDetection=    ${EnableBackgroundDetection[@]}"
+	echo "EnableAdaptiveQuantization=   ${EnableAdaptiveQuantization[@]}"
 }
 runBeforeGenerate()
 {
 	headline="FramesToBeEncoded,\
 					NumTempLayer, \
-					ScreenContentSignal,\
+					UsageType,\
 					RCMode,\
 					TargetBitrate,\
 					InitialQP,\
@@ -346,7 +363,11 @@ runBeforeGenerate()
 					MultipleThreadIdc,\
 					EnableLongTermReference,\
 					LoopFilterDisableIDC,\
-					MaxNalSize" 
+					MaxNalSize,\
+					DenoiseFlag,\
+					SceneChangeFlag,\
+					BackgroundFlag,\
+					AQFlag" 
 	echo $headline>$casefile			
 	echo $headline>$casefile_01
 	echo $headline>$casefile_02
@@ -387,5 +408,4 @@ OutputCaseFile=$3
 echo ""
 echo "case generating ......"
 runMain  ${ConfigureFile}   ${TestSequence}   ${OutputCaseFile}
-
 
