@@ -20,7 +20,7 @@
 #            ${TestSetIndex}_${TestSequenceName}_AllCaseOutput.csv
 #            ${AllCaseConsoleLogFile}
 #            ${CaseSummaryFile}
-#            ${FlagFile}
+#           
 #      
 #
 #date:  10/06/2014 Created
@@ -52,12 +52,12 @@ runGlobalVariableInitial()
 	AllCaseConsoleLogFile="${FinalResultPath}/${TestSequenceName}.TestLog"
 	CaseSummaryFile="${FinalResultPath}/${TestSequenceName}.Summary"
 	
-	echo	"BitMatched Status,SHA-1 Value,    \
-			MD5String, BitStreamSize, YUVSize, \
-			-frms, -numtl, -scrsig, -rc,       \
-			-tarb, -lqp 0, -iper,              \
-			-slcmd 0,-slcnum 0, -thread,       \
-			-ltr, -db, -MaxNalSize, -denois,   \
+	echo	"EncoderFlag,DecoderFlag,SHA-1 Value,\
+			MD5String, BitStreamSize, YUVSize,   \
+			-frms, -numtl, -scrsig, -rc,         \
+			-tarb, -lqp 0, -iper,                \
+			-slcmd 0,-slcnum 0, -thread,         \
+			-ltr, -db, -MaxNalSize, -denois,     \
 			-scene,     -bgd,    -aq">${AllCasePassStatusFile}
 			
 	echo	"SHA-1 Value, 					   \
@@ -82,13 +82,21 @@ runGlobalVariableInitial()
 	DiffFlag=""
 	
 	EncoderCommand=""
-	let "TotalCaseNum=0"
-	let "EncPassCaseNum=0"
-	let "EncUnpassCaseNum=0"
-	let "DecPassCaseNum=0"
-	let "DecUnpassCaseNum=0"
-	let "EncoderFlag=1"
-	let "DecoderFlag=1"
+	EncoderLog="encoder.log"
+	
+	let "EncoderPassedNum=0"
+	let "EncoderUnPassedNum=0"
+	let "DecoderPassedNum=0"
+	let "DecoderUpPassedNum=0"
+	let "DecoderUnCheckNum=0"
+	let "EncoderPassedFlag=1"
+	let "DecoderPassedFlag=1"
+	EncoderCheckResult="NULL"
+	DecoderCheckResult="NULL"
+	BitStreamSHA1String="NULL"
+	EncoderCommand="NULL"	
+	
+	
 }
 #called by runGlobalVariableInitial
 #usage runEncoderCommandInital
@@ -201,15 +209,15 @@ runEncodeOneCase()
 	./h264enc   ${CaseCommand}        \
 		-bf     ${BitStreamFile}      \
 		-org    ${TestSequencePath}/${TestSequenceName} \
-		-drec 0 ${RecYUVFile}
-					
+		-drec 0 ${RecYUVFile} >${EncoderLog}
+	
 }
 #usage: runGetFileSize  $FileName
 runGetFileSize()
 {
 	if [ $#  -lt 1  ]
 	then 
-		echo "usage??¡ìunGetFileSize  $FileName!"
+		echo "usage: runGetFileSize  $FileName!"
 		return 1
 	fi
 	
@@ -221,6 +229,150 @@ runGetFileSize()
 	FileSize=`echo $TempInfo | awk '{print $5}'`
 	
 	echo $FileSize
+}
+#usage: runGetEncodedNum  ${EncoderLog}
+runGetEncodedNum()
+{
+	if [ $#  -lt 1  ]
+	then 
+		echo "usage: runGetEncodedNum  \${EncoderLog}"
+		return 1
+	fi
+	
+	local EncoderLog=$1
+	local EncodedNum="0"
+	
+	while read line
+	do
+		if [[  ${line}  =~ ^Frames  ]]
+		then
+			EncodedNum=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+			break
+		fi
+	done <${EncoderLog}
+	
+	echo ${EncodedNum}
+}
+#usage: runParseCheckResult  ${EncoderFailedFlag} ${EncoderFlag}} ${DecoderFlag}
+#Input string is the combination of encoder flag and decoder flag:
+#       XX  XX  ==> EncoderFlag    DecoderFlag
+#       ----for Encoder Flag:
+#            00  Encoder_Rec=JSVM_Dec
+#            01  Encoder  failed (0 bit bit stream/rec YUV )
+#            10  JSVM decoded failed
+#            11  Encoder_Rec != JSVM_Dec
+#       ----for Decoder Flag:
+#            00 Decoder_Rec=JSVM_Dec
+#            01 Decoder  failed 
+#            11 Decoder_Rec != JSVM_Dec
+#            10 not sure due to the encoder failed or JSVM decoded failed, no bit stream or YUV for check
+#output is :
+#        update:  --EncoderCheckResult DecoderCheckResult  
+#                 --EncoderPassedNum  EncoderUnPassedNum 
+#                 --DecoderPassedNum  DecoderUpPassedNum  DecoderUnCheckNum
+runParseCheckResult()
+{
+	if [ ! $# -eq 3 ]
+	then
+		echo "usge: runParseCheckResult  \${EncoderFailedFlag} \${EncoderFlag}} \${DecoderFlag}"
+		return 1
+	fi
+	local EncoderFailedFlag=$1
+	local EncoderFlag=$2
+	local DecoderFlag=$3
+	local EncodedNum=${EncoderCommandValue[0]}
+	local ActualEncoded=""
+	local InputYUVSize=""
+	local RecYUVSize=""
+	local RCMode=${EncoderCommandValue[3]}
+	
+	#check whether the encoder failed (eg. core dumped)
+	if [ ${EncoderFailedFlag} -eq 1 ]
+	then
+		let "EncoderUnPassedNum++"
+		let "DecoderUnCheckNum++"
+		EncoderCheckResult="1:Encoder failed!"
+		DecoderCheckResult="3:Dec cannot check"
+		return 1
+	fi
+	
+	InputYUVSize=`runGetFileSize  ${TestSequencePath}/${TestSequenceName}`
+	RecYUVSize=`runGetFileSize ${RecYUVFile}`
+	ActualEncoded=`runGetEncodedNum  ${EncoderLog} `
+	#check the encoder number is the same with setting number
+	if [ ${RCMode} -eq 0  ]
+	then
+		if [ ${EncodedNum} -eq -1  ]
+		then
+			if [ ! ${InputYUVSize} -eq ${RecYUVSize}]
+			then
+				let "EncoderUnPassedNum++"
+				let "DecoderUnCheckNum++"
+				EncoderCheckResult="1:Encoder failed,Encoded number is not equal to setting!"
+				DecoderCheckResult="3:Dec cannot check"
+				return 1		
+			fi
+		fi
+		
+		if [ ${EncodedNum} -gt 0  ]
+		then
+			if [ ! ${ActualEncoded} -eq  ${EncodedNum}  ]
+			then
+				let "EncoderUnPassedNum++"
+				let "DecoderUnCheckNum++"
+				EncoderCheckResult="1:Encoder failed,Encoded number is not equal to setting!"
+				DecoderCheckResult="3:Dec cannot check"
+				return 1					
+			fi
+		fi	
+	fi
+	
+	echo ""
+	echo "InputYUVSize=${InputYUVSize}  RecYUVSize=${RecYUVSize} "
+	echo "EncodedNum=${EncodedNum} ActualEncoded=${ActualEncoded} "
+	echo ""
+	
+	
+    #************************************************
+	if [ "${EncoderFlag}" = "00"  ]
+	then
+		let "EncoderPassedFlag=0"
+		EncoderCheckResult="0:Encoder passed!"
+		let "EncoderPassedNum++"
+	elif  [ "${EncoderFlag}" = "01"  ]
+	then
+		EncoderCheckResult="1:Encoder failed!"
+		let "EncoderUnPassedNum++"
+	elif  [ "${EncoderFlag}" = "10"  ]
+	then
+		EncoderCheckResult="2:JSVM decoder failed!"
+		let "EncoderUnPassedNum++"
+	elif  [ "${EncoderFlag}" = "11"  ]
+	then
+		EncoderCheckResult="3:Rec-JSVM not match"
+		let "EncoderUnPassedNum++"
+	fi
+	if [ "${DecoderFlag}" = "00"  ]
+	then
+		let "DecoderPassedFlag=0"
+		DecoderCheckResult="0:Decoder passed!"
+		let "DecoderPassedNum++"
+	elif  [ "${DecoderFlag}" = "01"  ]
+	then
+		DecoderCheckResult="1:Decoder failed!"
+		let "DecoderUpPassedNum++"
+	elif  [ "${DecoderFlag}" = "11"  ]
+	then
+		DecoderCheckResult="2:Dec-JSVM not match"
+		let "DecoderUpPassedNum++"
+	elif  [ "${DecoderFlag}" = "10"  ]
+	then
+		let "DecoderPassedFlag=0"
+		DecoderCheckResult="3:Dec cannot check"
+		let "DecoderUnCheckNum++"
+	fi
+	
+	return 0
 }
 #call by  runAllCaseTest
 #delete needless files and output single case test result to log file
@@ -243,7 +395,7 @@ runSingleCasePostAction()
 	CaseInfo=`echo $CaseData | awk 'BEGIN {FS="[,\r]"} {for(i=1;i<=NF;i++) printf(" %s,",$i)} '` 
 	
 	
-	if [ ${EncoderFlag}  -eq 0   ]
+	if [ ${EncoderPassedFlag}  -eq  0  ]
 	then 
 	    SHA1String=`sha1sum  -b  ${BitStreamFile}`
 		SHA1String=`echo ${SHA1String} | awk '{print $1}' `
@@ -253,110 +405,37 @@ runSingleCasePostAction()
 		
 		YUVSize=`runGetFileSize  ${TestSequencePath}/${TestSequenceName}`
 	    BitStreamSize=`runGetFileSize  ${BitStreamFile}`
+		echo " ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}">>${AllCaseSHATableFile}
 	else
 		 SHA1String="NULL"
 		 MD5String="NULL"
 		 let "YUVSize=0"
 		 let "BitStreamSize=0"
 	fi
+		
+	echo "${EncoderCheckResult},${DecoderCheckResult}, -------SHA1 string is : ${SHA1String}"
+	echo "${EncoderCheckResult},${DecoderCheckResult}, -------MD5  string is : ${MD5String}"
+	echo "${EncoderCheckResult},${DecoderCheckResult}, ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}, ${EncoderCommand} ">>${AllCasePassStatusFile}
 	
-	echo "${DiffFlag}, -------SHA1 string is : ${SHA1String}"
-	echo "${DiffFlag}, -------MD5  string is : ${MD5String}"
-	echo "${DiffFlag}, ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}, ${EncoderCommand} ">>${AllCasePassStatusFile}
 	
-	if [  !  "$SHA1String" = "NULL"  ]
-	then	
-		echo " ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}">>${AllCaseSHATableFile}
-	fi
-	rm -f ${DiffInfo}
-	rm -f ${TempDataPath}/*
-}
-#usage: runValidateCheck $ReturnInfo
-runValidateCheck()
-{
-	if [ $#  -lt 1  ]
-	then 
-		echo "usage: runValidateCheck \$ReturnInfo"
-		return 1
-	fi
+	for file in  ${TempDataPath}/*
+	do
+		./run_SafeDelete.sh  ${file}>>DeleteInterm.list
+	done
 	
-	local ReturnInfo=$1
-	#encoder check
-	if [[ "${ReturnInfo}" =~ "1:unpassed!"  ]]
-	then
-		let "EncoderFlag=1"
-	elif [[ "${ReturnInfo}" =~ "2:unpassed!"   ]]
-	then
-		let "EncoderFlag=1"
-	elif [[ "${ReturnInfo}" =~ "3:unpassed!"   ]]
-	then
-		let "EncoderFlag=1"
-	elif [[ "${ReturnInfo}" =~ "4:unpassed!"   ]]
-	then
-		let "EncoderFlag=1"
-	else
-		let "EncoderFlag=0"
-	fi
-	
-	#decoder check
-	if [[ "${ReturnInfo}" =~ "5:unpassed!"  ]]
-	then
-		let "DecoderFlag=1"
-	elif [[ "${ReturnInfo}" =~ "6:unpassed!"   ]]
-	then
-		let "DecoderFlag=1"
-	elif [[ "${ReturnInfo}" =~ "7:unpassed!"   ]]
-	then
-		let "DecoderFlag=1"
-	else
-		let "DecoderFlag=0"
-	fi
-	
-    #pass number	
-	if [ ${EncoderFlag}  -eq 0  ]
-	then
-		echo " pass"
-		let "EncPassCaseNum ++"
-	else
-		echo "not pass"
-		let " EncUnpassCaseNum ++"
-	fi
-	
-	if [  ${DecoderFlag} -eq 0  ]
-	then
-		let "DecPassCaseNum ++"
-	else
-		let "DecUnPassCaseNum ++"
-	fi
-	
-	if [  ${EncoderFlag}  -eq 1  -o ${DecoderFlag} -eq 1 ]
-	then
-		cp -f ${BitStreamFile}            ${IssueDataPath}	
-	fi	
 }
 # run all test case based on XXXcase.csv file
 #usage  runAllCaseTest
 runAllCaseTest()
 {
-	local Flag=""
-	let "Flag=0"
-	local ReturnInfo=""
-	local CheckLogFile="JMDec_WelsDec_log.log"
+	local CaseCheckResult=""
+	local CheckLogFile="CaseCheck.log"
+	local EncoderFailedFlag=""
+	let   "EncoderFailedFlag=1"
 	
 	while read CaseData
-	do
-		#get case parameter's value 
-		if [[ $CaseData =~ ^-1  ]]
-		then
-			let "Flag=0"
-		elif [[ $CaseData =~ ^[0-9]  ]]
-		then
-			let "Flag=0"
-		else
-			let "Flag=1"
-		fi
-		
-		if [[ $Flag  -eq 0  ]]
+	do		
+		if [[ $CaseData =~ ^[-0-9]  ]]
 		then			
 			echo ""
 			echo ""
@@ -365,21 +444,25 @@ runAllCaseTest()
 			
 			runParseCaseInfo ${CaseData}
 			echo ""
-			runEncodeOneCase  ${CodecFolder}	
+			runEncodeOneCase  ${CodecFolder}
+			let  "EncoderFailedFlag=$?"
+			cat ${EncoderLog}
+			
 			echo ""
 			echo "******************************************"
-			echo "Bit stream conformance virification.... "
+			echo "Bit stream conformance check.... "
 				
 			#bit stream file validation checking, 
-			#encoder: Rec.yuv should be same with JM_Dec.yuv
-			#decoder: Rec.yuv should be same with JM_Dec.yuv
-			ReturnInfo=`./run_BitStreamValidateCheck.sh  ${BitStreamFile}  ${JMDecYUVFile}  ${DecYUVFile}  ${RecYUVFile} ${IssueDataPath}`
-			runValidateCheck $ReturnInfo
-         	
-			DiffFlag=${ReturnInfo}
+			#encoder: Rec.yuv should be the same with JM_Dec.yuv
+			#decoder: Rec.yuv should be the same with JM_Dec.yuv
 			
+			CaseCheckResult=`./run_BitStreamValidateCheckSingleLayer.sh  ${BitStreamFile}  ${JMDecYUVFile}  ${DecYUVFile}  ${RecYUVFile} ${IssueDataPath}  ${CheckLogFile}`
+			
+			echo ".........result parse.........${EncoderFailedFlag}   $CaseCheckResult"
+			runParseCheckResult  ${EncoderFailedFlag}   $CaseCheckResult
+         				
 			cat ${CheckLogFile}
-			echo "return value for bit stream is  ${ReturnInfo}"
+			echo "return value for bit stream is  ${CaseCheckResult}"
 			runSingleCasePostAction  ${CaseData}
 			let "TotalCaseNum++"	
 			
@@ -391,50 +474,40 @@ runAllCaseTest()
 runOutputPassNum()
 {
 	# output file locate in ../result
-	echo ""
-	echo "***********************************************************"
-	echo "${TestSetIndex}_${TestSequenceName}"
-	echo "total case  Num is :  ${TotalCaseNum}"
-	echo "Encoder pass  case  Num is : ${EncPassCaseNum}"
-	echo "Encoder unpass case Num is : ${EncUnpassCaseNum} "
-	echo "Decoder pass  case  Num is : ${DecPassCaseNum}"
-	echo "Decoder unpass case Num is : ${DecUnpassCaseNum} "
-	echo "issue bitstream can be found in .../AllTestData/${TestSetIndex}/issue"
-	echo "detail result  can be found in .../AllTestData/${TestSetIndex}/result"
-	echo "***********************************************************"
-	echo ""
-	
-	
 	TestFolder=`echo $CurrentDir | awk 'BEGIN {FS="/"} { i=NF; print $i}'`
 	
+	echo ""
+	echo "***********************************************************"
+	echo "total case  Num     is : ${TotalCaseNum}"
+	echo "EncoderPassedNum    is : ${EncoderPassedNum}"
+	echo "EncoderUnPassedNum  is : ${EncoderUnPassedNum} "
+	echo "DecoderPassedNum    is : ${DecoderPassedNum}"
+	echo "DecoderUpPassedNum  is : ${DecoderUpPassedNum}"
+	echo "DecoderUnCheckNum   is : ${DecoderUnCheckNum}"
+	echo "issue bitstream can be found in .../AllTestData/${TestFolder}/issue"
+	echo "detail result  can be found in .../AllTestData/${TestFolder}/result"
+	echo "***********************************************************"
+	echo ""
 	
-	echo "${TestSetIndex}_${TestSequenceName}, \
-		 ${EncPassCaseNum} pass!,                   \
-		 ${EncUnpassCaseNum} unpass!,				\
-		 ${DecPassCaseNum} pass!,                   \
-		 ${DecUnpassCaseNum} unpass!,				\
-		 detail file located in ../AllTestData/${TestFolder}/result">${CaseSummaryFile}
-		 
-		 
+	
+	echo "${TestSetIndex}_${TestSequenceName}">${CaseSummaryFile}
+	echo "total case  Num     , ${TotalCaseNum}" >>${CaseSummaryFile}
+	echo "EncoderPassedNum    , ${EncoderPassedNum}" >>${CaseSummaryFile}
+	echo "EncoderUnPassedNum  , ${EncoderUnPassedNum} " >>${CaseSummaryFile}
+	echo "DecoderPassedNum    , ${DecoderPassedNum}" >>${CaseSummaryFile}
+	echo "DecoderUpPassedNum  , ${DecoderUpPassedNum}" >>${CaseSummaryFile}
+	echo "DecoderUnCheckNum   , ${DecoderUnCheckNum}" >>${CaseSummaryFile}
+	echo "  detail file located in ../AllTestData/${TestSetIndex}/result" >>${CaseSummaryFile}	
+	
+	 
 	#generate All case Flag
-	if [  ! ${EncUnpassCaseNum} -eq 0  ]	
+	if [  ! ${EncoderUnPassedNum} -eq 0  ]	
 	then
 		FlagFile="./result/${TestSetIndex}_${TestSequenceName}.unpassFlag"
 	else
 		FlagFile="./result/${TestSetIndex}_${TestSequenceName}.passFlag"
 	fi
 	touch ${FlagFile}
-	
-	#prompt info
-	echo ""
-	echo "***********************************************************"
-	echo "detail file include:"
-	echo "../AllTestData/${TestFolder}/result/  ${AllCaseConsoleLogFile}"
-	echo "../AllTestData/${TestFolder}/result/  ${CaseSummaryFile}"
-	echo "../AllTestData/${TestFolder}/result/  ${FlagFile}"
-	echo "***********************************************************"
-	echo ""
-	
 	
 }
 #***********************************************************

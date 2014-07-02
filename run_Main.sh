@@ -23,10 +23,19 @@
 #
 #date:  10/06/2014 Created
 #***************************************************************************************
- runMain()
+runPromptINfo()
  {
  
+	echo ""
+	echo  -e "\033[32m Final result can be found in ./FinaleRestult \033[0m"
+	echo  -e "\033[32m SHA1 table can be found in ./SHA1Table \033[0m"
+	echo ""
  
+ 
+ }
+ 
+runMain()
+ { 
 	if [ ! $# -eq 1 ]
 	then
 		echo "usage: ./run_Main.sh \$ConfigureFile"
@@ -71,17 +80,18 @@
 	./run_AllBitStreamAllCasesTest.sh   ${TestBitStreamFolder} ${AllTestDataFolder}  ${FinalResultDir} ${ConfigureFile}
 	if [ ! $? -eq 0 ]
 	then
-		echo "failed: not all cases for all bit stream are passed !"
 		echo ""
-		echo "copying SHA1 files to folder SHA1Table ...."
-		./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}
+		echo -e "\033[31m failed: not all cases for all bit stream are passed ! \033[0m"
+		echo ""
+		./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}>SHA1Table.log
+		runPromptINfo
 		exit 1
-	else
-		echo "all cases have been passed!"
+	else 
 		echo ""
+		echo -e "\033[32m all cases of  all bit streams have been passed! \033[0m"
 		echo ""
-		echo "copying SHA1 files to folder SHA1Table ...."
-		./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}
+		./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}>SHA1Table.log
+		runPromptINfo
 		exit 0
 	fi
 	 

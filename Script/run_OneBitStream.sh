@@ -38,11 +38,7 @@
 	
 	local CurrentDir=`pwd`
 	local TestYUVName=""
-	local StreamName=""
-	local ConfigureFile="case.cfg"
 	local OutPutCaseFile=""
-	
-	
 	
 	#bit stream to YUV
 	./run_BitStreamToYUV.sh  ${StreamFileFullPath}
@@ -51,8 +47,10 @@
 		echo "failed to translate bit stream to yuv !"
 		exit 1
 	fi
+	
 	TestYUVName=`echo  ./*.yuv`
 	TestYUVName=`echo ${TestYUVName} | awk 'BEGIN {FS="/"}  {print $NF}   ' `
+	ConfigureFile=`echo ${ConfigureFile} | awk 'BEGIN {FS="/"} {print $NF}'`
 	echo ""
 	echo  "TestYUVName is ${TestYUVName}"
 	
@@ -77,7 +75,7 @@
 		echo "Not All Cass pass!!!"
 		exit 1
 	else
-		echo "all cases pass!! ----bit stream:  ${StreamName}"
+		echo "all cases pass!!"
 		cp  ./result/*    ${FinalResultDir}
 		exit 0
 	fi
