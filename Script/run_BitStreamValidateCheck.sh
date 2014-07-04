@@ -65,7 +65,7 @@ runWelsDecCheck()
 
   ./h264dec     ${BitStreamFile}   ${DecYUVFile} 2>>${CheckLogFile}
 
-    let "WelsDecodeFlag=$?"
+  let "WelsDecodeFlag=$?"
   if [ ! ${WelsDecodeFlag}  -eq 0  ]
   then
     return 5
