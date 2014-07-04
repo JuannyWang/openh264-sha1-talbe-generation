@@ -1,5 +1,5 @@
 
-Openh264 encoder test--SHA1 generate model
+Openh264 Test--SHA1 generation model
 ==========================================
 about
 -----
