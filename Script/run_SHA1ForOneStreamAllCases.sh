@@ -52,21 +52,21 @@ runGlobalVariableInitial()
   AllCaseConsoleLogFile="${FinalResultPath}/${TestSequenceName}.TestLog"
   CaseSummaryFile="${FinalResultPath}/${TestSequenceName}.Summary"
 
-        echo  "EncoderFlag,DecoderFlag,SHA-1 Value,\
-                MD5String, BitStreamSize, YUVSize,   \
-                -frms, -numtl, -scrsig, -rc,         \
-                -tarb, -lqp 0, -iper,                \
-                -slcmd 0,-slcnum 0, -thread,         \
-                -ltr, -db, -MaxNalSize, -denois,     \
-                -scene,     -bgd,    -aq">${AllCasePassStatusFile}
+  echo  "EncoderFlag,DecoderFlag,SHA-1 Value,\
+        MD5String, BitStreamSize, YUVSize,   \
+        -frms, -numtl, -scrsig, -rc,         \
+        -tarb, -lqp 0, -iper,                \
+        -slcmd 0,-slcnum 0, -thread,         \
+        -ltr, -db, -MaxNalSize, -denois,     \
+        -scene,  -bgd,-aq">${AllCasePassStatusFile}
 
-        echo  "SHA-1 Value,                      \
-                MD5String, BitStreamSize, YUVSize, \
-                -frms, -numtl, -scrsig, -rc,       \
-                -tarb, -lqp 0, -iper,              \
-                -slcmd 0,-slcnum 0, -thread,       \
-                -ltr, -db, -MaxNalSize,-denois,    \
-                -scene,     -bgd,    -aq">${AllCaseSHATableFile}
+  echo  "SHA-1 Value,                      \
+        MD5String, BitStreamSize, YUVSize, \
+        -frms, -numtl, -scrsig, -rc,       \
+        -tarb, -lqp 0, -iper,              \
+        -slcmd 0,-slcnum 0, -thread,       \
+        -ltr, -db, -MaxNalSize,-denois,    \
+        -scene,  -bgd, -aq">${AllCaseSHATableFile}
 
   #intial Commandline parameters
   declare -a EncoderCommandSet
@@ -102,41 +102,41 @@ runGlobalVariableInitial()
 #usage runEncoderCommandInital
 runEncoderCommandInital()
 {
-  EncoderCommandSet=(-frms       \
-             -numtl      \
-             -scrsig     \
-             -rc         \
-             -tarb       \
-             "-lqp 0"    \
-             -iper       \
-             "-slcmd 0"  \
-             "-slcnum 0" \
-             -thread     \
-             -ltr        \
-             -db         \
-             "-nalsize " \
-             -denois     \
-             -scene      \
-             -bgd        \
-             -aq)
+  EncoderCommandSet=(-frms  \
+                -numtl      \
+                -scrsig     \
+                -rc         \
+                -tarb       \
+                "-lqp 0"    \
+                -iper       \
+                "-slcmd 0"  \
+                "-slcnum 0" \
+                -thread     \
+                -ltr        \
+                -db         \
+                "-nalsize " \
+                -denois     \
+                -scene      \
+                -bgd        \
+                -aq)
 
-  EncoderCommandName=(FrEcoded     \
-            NumTempLayer \
-            ContentSig   \
-            RC           \
-            BitRate      \
-            QP           \
-            IntraPeriod  \
-            SlcMd        \
-            SlcMum       \
-            ThrMum       \
-            LTR          \
-            LFilterIDC   \
-            MaxNalSize   \
-            DenoiseFlag  \
-            SceneChangeFlag \
-            BackgroundFlag  \
-            AQFlag)
+  EncoderCommandName=(FrEcoded \
+                NumTempLayer   \
+                ContentSig     \
+                RC             \
+                BitRate        \
+                QP             \
+                IntraPeriod    \
+                SlcMd          \
+                SlcMum         \
+                ThrMum         \
+                LTR            \
+                LFilterIDC     \
+                MaxNalSize     \
+                DenoiseFlag    \
+                SceneChangeFlag \
+                BackgroundFlag  \
+                AQFlag)
   EncoderCommandValue=(0 0 0 0 0     0 0 0 0 0     0 0 0 0 0   0  0)
   NumParameter=${#EncoderCommandSet[@]}
 
@@ -176,13 +176,13 @@ runParseCaseInfo()
 runEncodeOneCase()
 {
   BitStreamFile=${BitstreamTarget}
-  CaseCommand="${ConfigureFile}       \
-    -numl 1                 \
+  CaseCommand="${ConfigureFile}  \
+    -numl 1                      \
     -lconfig 0 layer2.cfg        \
-    -sw   ${PicW} -sh   ${PicH}    \
-    -dw 0 ${PicW} -dh 0 ${PicH}    \
-    -frout 0  30                   \
-    -ltarb 0  ${EncoderCommandValue[4]}  \
+    -sw   ${PicW} -sh   ${PicH}  \
+    -dw 0 ${PicW} -dh 0 ${PicH}  \
+    -frout 0  30                 \
+    -ltarb 0  ${EncoderCommandValue[4]} \
     ${EncoderCommandSet[0]}  ${EncoderCommandValue[0]}  \
     ${EncoderCommandSet[1]}  ${EncoderCommandValue[1]}  \
     ${EncoderCommandSet[2]}  ${EncoderCommandValue[2]}  \
