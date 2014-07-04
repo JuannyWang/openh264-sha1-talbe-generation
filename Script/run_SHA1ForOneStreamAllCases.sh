@@ -52,21 +52,21 @@ runGlobalVariableInitial()
 	AllCaseConsoleLogFile="${FinalResultPath}/${TestSequenceName}.TestLog"
 	CaseSummaryFile="${FinalResultPath}/${TestSequenceName}.Summary"
 	
-	echo	"EncoderFlag,DecoderFlag,SHA-1 Value,\
-			MD5String, BitStreamSize, YUVSize,   \
-			-frms, -numtl, -scrsig, -rc,         \
-			-tarb, -lqp 0, -iper,                \
-			-slcmd 0,-slcnum 0, -thread,         \
-			-ltr, -db, -MaxNalSize, -denois,     \
-			-scene,     -bgd,    -aq">${AllCasePassStatusFile}
+        echo	"EncoderFlag,DecoderFlag,SHA-1 Value,\
+                MD5String, BitStreamSize, YUVSize,   \
+                -frms, -numtl, -scrsig, -rc,         \
+                -tarb, -lqp 0, -iper,                \
+                -slcmd 0,-slcnum 0, -thread,         \
+                -ltr, -db, -MaxNalSize, -denois,     \
+                -scene,     -bgd,    -aq">${AllCasePassStatusFile}
 			
-	echo	"SHA-1 Value, 					   \
-			MD5String, BitStreamSize, YUVSize, \
-			-frms, -numtl, -scrsig, -rc,       \
-			-tarb, -lqp 0, -iper,              \
-			-slcmd 0,-slcnum 0, -thread,       \
-			-ltr, -db, -MaxNalSize,-denois,    \
-			-scene,     -bgd,    -aq">${AllCaseSHATableFile}			
+        echo	"SHA-1 Value,                      \
+                MD5String, BitStreamSize, YUVSize, \
+                -frms, -numtl, -scrsig, -rc,       \
+                -tarb, -lqp 0, -iper,              \
+                -slcmd 0,-slcnum 0, -thread,       \
+                -ltr, -db, -MaxNalSize,-denois,    \
+                -scene,     -bgd,    -aq">${AllCaseSHATableFile}			
 			
 	#intial Commandline parameters
 	declare -a EncoderCommandSet
