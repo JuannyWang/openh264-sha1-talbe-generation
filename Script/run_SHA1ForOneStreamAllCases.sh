@@ -304,7 +304,7 @@ runParseCheckResult()
 	then
 		if [ ${EncodedNum} -eq -1  ]
 		then
-			if [ ! ${InputYUVSize} -eq ${RecYUVSize}]
+			if [ ! ${InputYUVSize} -eq ${RecYUVSize} ]
 			then
 				let "EncoderUnPassedNum++"
 				let "DecoderUnCheckNum++"
