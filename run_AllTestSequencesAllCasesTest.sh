@@ -1,3 +1,4 @@
+
 #!/bin/bash
 #***************************************************************************************
 # SHA1 table generation model:
@@ -14,10 +15,12 @@
 #      4 For more detail, please refer to READE.md
 #
 # brief:
-#      --delete previous test data, and prepare test space for all test bit stream in AllTestData/XXX.264
-#      --usage: run_PrepareAllTestData.sh  $AllTestDataFolder  $TestBitStreamFolder  \
-#                                          $CodecFolder  $ScriptFolder               \
-#                                          $ConfigureFile/$SH1TableFolder
+#      --test all bit stream in folder ./BitStreamForTest
+#      --usage: run_CopySHA1Table  run_CopySHA1Table.sh \$SHAFolder_from  \$SHAFolder_to
+#               eg:  run_AllBitStreamALlCasesTest  ${BitstreamDir}   \
+#                                                  ${AllTestDataDir} \
+#                                                  ${FinalResultDir} \
+#                                                  ${ConfigureFile}
 #
 #
 #date:  10/06/2014 Created
@@ -67,72 +70,67 @@ runGetTestYUVList()
   
   echo "${TestSet1}  ${TestSet2}  ${TestSet3}  ${TestSet4}  ${TestSet5}  ${TestSet6}  ${TestSet7}  " 
 }
-#usage: runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFile/$SH1TableFolder
-runPrepareALlFolder()
+#usage: runAllTestBitstream   ${BitstreamDir} ${AllTestDataDir}  ${FinalResultDir}
+runAllTestBitstream()
 {
   #parameter check!
-  if [ ! $# -eq 4  ]
+  if [ ! $# -eq 3  ]
   then
-    echo "usage: usage: run_PrepareAllTestFolder.sh    \$AllTestDataFolder  \$CodecFolder  \$ScriptFolder \$ConfigureFile"
+    echo "usage: runAllTestBitstream  \${AllTestDataDir}  \${FinalResultDir}  \${ConfigureFile}"
     return 1
-  fi
-  local AllTestDataFolder=$1
-  local CodecFolder=$2
-  local ScriptFolder=$3
-  local ConfigureFile=$4
-  local SubFolder=""
-  local IssueFolder="issue"
-  local TempDataFolder="TempData"
-  local ResultFolder="result"
-  local SHA1TableFolder="SHA1Table"
-  local FinalResultDir="FinalResult"
+   fi
+   
+  local AllTestDataDir=$1
+  local FinalResultDir=$2
+  local ConfigureFile=$3
+  local CurrentDir=`pwd`
+  
+  let   "Flag=0"
+  local TestFlagFile=""
   declare -a aTestYUVList
   
-  if [ -d $AllTestDataFolder ]
-  then
-    ./${ScriptFolder}/run_SafeDelete.sh  $AllTestDataFolder
-  fi
-  if [ -d $SHA1TableFolder ]
-  then
-    ./${ScriptFolder}/run_SafeDelete.sh  $SHA1TableFolder
-  fi
-  if [ -d $FinalResultDir ]
-  then
-    ./${ScriptFolder}/run_SafeDelete.sh  $FinalResultDir
-  fi
-  mkdir ${SHA1TableFolder}
-  mkdir ${FinalResultDir}
-  echo ""
-  echo "preparing All test data folders...."
-  echo ""
-  echo ""
+  #get full path info
+  cd ${FinalResultDir}
+  FinalResultDir=`pwd`
+  cd  ${CurrentDir}
+  let "Flag=0"
   aTestYUVList=(`runGetTestYUVList  ${ConfigureFile}`)
-  
   for TestYUV in ${aTestYUVList[@]}
   do
-    SubFolder="${AllTestDataFolder}/${TestYUV}"
-	
-	if [  -d  ${SubFolder}  ]
-	then
-		continue
+    SubFolder="${AllTestDataDir}/${TestYUV}"
+	TestFlagFile="${TestYUV}_Tested.flag"
+	  
+	if [ -e   ${SubFolder}/${TestFlagFile} ]
+	then	
+	  continue
 	fi
 	
-    echo "sub folder is  ${SubFolder}"
+	cd  ${SubFolder}
     echo ""
-    mkdir -p ${SubFolder}
-    mkdir -p ${SubFolder}/${IssueFolder}
-    mkdir -p ${SubFolder}/${TempDataFolder}
-    mkdir -p ${SubFolder}/${ResultFolder}
-    cp  ${CodecFolder}/*    ${SubFolder}
-    cp  ${ScriptFolder}/*   ${SubFolder}
-    cp  ${ConfigureFile}    ${SubFolder}
+    echo "test YUV is ${TestYUV}"
+    echo ""
+    #*******************************
+    ./run_OneBitStream.sh  ${StreamFullPath}  ${FinalResultDir}  ${ConfigureFile}
+    if [  ! $? -eq 0 ]
+    then
+      echo -e "\033[31m not all test cases have been passed! \033[0m"
+      let "Flag=1"
+    fi
+	#when test completed, generate flag file to avoid repeating test
+    touch ${TestFlagFile}
+	
+    cd  ${CurrentDir}
   done
+  if [ ! ${Flag} -eq 0  ]
+  then
+    return 1
+  else
+    return 0
+  fi
+  
 }
-AllTestDataFolder=$1
-CodecFolder=$2
-ScriptFolder=$3
-ConfigureFile=$4
-runPrepareALlFolder   $AllTestDataFolder    $CodecFolder  $ScriptFolder  $ConfigureFile
-echo ""
-echo ""
+AllTestDataDir=$1
+FinalResultDir=$2
+ConfigureFile=$3
+runAllTestBitstream   ${AllTestDataDir}  ${FinalResultDir} ${ConfigureFile}
 
