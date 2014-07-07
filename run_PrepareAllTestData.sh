@@ -17,60 +17,108 @@
 #      --delete previous test data, and prepare test space for all test bit stream in AllTestData/XXX.264
 #      --usage: run_PrepareAllTestData.sh  $AllTestDataFolder  $TestBitStreamFolder  \
 #                                          $CodecFolder  $ScriptFolder               \
-#                                          $ConfigureFolder/$SH1TableFolder
+#                                          $ConfigureFile/$SH1TableFolder
 #
 #
 #date:  10/06/2014 Created
 #***************************************************************************************
-#usage: runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFolder/$SH1TableFolder
+#usage: runGetTestYUVList  ${ConfigureFile}
+runGetTestYUVList()
+{
+  if [ ! $# -eq 1  ]
+  then
+    echo "usage: runGetTestYUVList  \${ConfigureFile}"
+    return 1
+  fi
+  
+  local ConfigureFile=$1
+  local TestSet1=""
+  local TestSet2=""
+  local TestSet3=""
+  local TestSet4=""
+  local TestSet5=""
+  local TestSet6=""
+  local TestSet7=""   
+  while read line
+  do
+     if [[ "$line" =~ ^TestSet1  ]]
+    then
+      TestSet1=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+    elif  [[ "$line" =~ ^TestSet2  ]]
+    then
+      TestSet2=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+    elif  [[ "$line" =~ ^TestSet3  ]]
+    then
+      TestSet3=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+    elif  [[ "$line" =~ ^TestSet4  ]]
+    then
+      TestSet4=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+    elif  [[ "$line" =~ ^TestSet5  ]]
+    then
+      TestSet5`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+    elif  [[ "$line" =~ ^TestSet6  ]]
+    then
+      TestSet6=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+    elif  [[ "$line" =~ ^TestSet7  ]]
+    then
+      TestSet7=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+    fi	  	  
+  done <${ConfigureFile}
+  
+  echo "${TestSet1}  ${TestSet2}  ${TestSet3}  ${TestSet4}  ${TestSet5}  ${TestSet6}  ${TestSet7}  "
+  
+}
+#usage: runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFile/$SH1TableFolder
 runPrepareALlFolder()
 {
   #parameter check!
   if [ ! $# -eq 5  ]
   then
-    echo "usage: usage: run_PrepareAllTestFolder.sh    \$AllTestDataFolder  \$TestBitStreamFolder  \$CodecFolder  \$ScriptFolder \$ConfigureFolder/\$SH1TableFolder"
+    echo "usage: usage: run_PrepareAllTestFolder.sh    \$AllTestDataFolder  \$TestBitStreamFolder  \$CodecFolder  \$ScriptFolder \$ConfigureFile"
     return 1
   fi
-
   local AllTestDataFolder=$1
   local TestBitStreamFolder=$2
   local CodecFolder=$3
-    local ScriptFolder=$4
-  local ConfigureFolder=$5
+  local ScriptFolder=$4
+  local ConfigureFile=$5
   local SubFolder=""
   local IssueFolder="issue"
   local TempDataFolder="TempData"
   local ResultFolder="result"
-
   local SHA1TableFolder="SHA1Table"
   local FinalResultDir="FinalResult"
-
+  declare -a aTestYUVList
+  
   if [ -d $AllTestDataFolder ]
   then
     ./${ScriptFolder}/run_SafeDelete.sh  $AllTestDataFolder
   fi
-
   if [ -d $SHA1TableFolder ]
   then
     ./${ScriptFolder}/run_SafeDelete.sh  $SHA1TableFolder
   fi
-
   if [ -d $FinalResultDir ]
   then
     ./${ScriptFolder}/run_SafeDelete.sh  $FinalResultDir
   fi
-
   mkdir ${SHA1TableFolder}
   mkdir ${FinalResultDir}
-
   echo ""
   echo "preparing All test data folders...."
   echo ""
   echo ""
-  for Bitsream in ${TestBitStreamFolder}/*.264
+  aTestYUVList=(`runGetTestYUVList  ${ConfigureFile}`)
+  
+  for TestYUV in ${aTestYUVList[@]}
   do
-      StreamName=`echo ${Bitsream} | awk 'BEGIN {FS="/"}  {print $NF}   ' `
-    SubFolder="${AllTestDataFolder}/${StreamName}"
+    SubFolder="${AllTestDataFolder}/${TestYUV}"
+	
+	if [  -d  ${SubFolder}  ]
+	then
+		continue
+	fi
+	
     echo "BitSream is ${Bitsream}"
     echo "sub folder is  ${SubFolder}"
     echo ""
@@ -78,21 +126,17 @@ runPrepareALlFolder()
     mkdir -p ${SubFolder}/${IssueFolder}
     mkdir -p ${SubFolder}/${TempDataFolder}
     mkdir -p ${SubFolder}/${ResultFolder}
-    cp  ${CodecFolder}/*   ${SubFolder}
+    cp  ${CodecFolder}/*    ${SubFolder}
     cp  ${ScriptFolder}/*   ${SubFolder}
-    cp  ${ConfigureFolder}/*   ${SubFolder}
-
+    cp  ${ConfigureFile}    ${SubFolder}
   done
-
 }
-
 AllTestDataFolder=$1
 TestBitStreamFolder=$2
 CodecFolder=$3
 ScriptFolder=$4
-ConfigureFolder=$5
-runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFolder
+ConfigureFile=$5
+runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFile
 echo ""
 echo ""
-
 
