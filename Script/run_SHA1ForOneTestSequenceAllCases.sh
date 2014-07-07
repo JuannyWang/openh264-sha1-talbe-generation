@@ -429,16 +429,16 @@ runOutputPassNum()
   # output file locate in ../result
   TestFolder=`echo $CurrentDir | awk 'BEGIN {FS="/"} { i=NF; print $i}'`
   echo ""
-  echo "***********************************************************"
-  echo "total case  Num     is : ${TotalCaseNum}"
-  echo "EncoderPassedNum    is : ${EncoderPassedNum}"
-  echo "EncoderUnPassedNum  is : ${EncoderUnPassedNum} "
-  echo "DecoderPassedNum    is : ${DecoderPassedNum}"
-  echo "DecoderUpPassedNum  is : ${DecoderUpPassedNum}"
-  echo "DecoderUnCheckNum   is : ${DecoderUnCheckNum}"
+  echo  -e "\033[32m *********************************************************** \033[0m"
+  echo  -e "\033[32m total case  Num     is : ${TotalCaseNum}\033[0m"
+  echo  -e "\033[32m EncoderPassedNum    is : ${EncoderPassedNum}\033[0m"
+  echo  -e "\033[31m EncoderUnPassedNum  is : ${EncoderUnPassedNum} \033[0m"
+  echo  -e "\033[32m DecoderPassedNum    is : ${DecoderPassedNum}\033[0m"
+  echo  -e "\033[31m DecoderUpPassedNum  is : ${DecoderUpPassedNum}\033[0m"
+  echo  -e "\033[31m DecoderUnCheckNum   is : ${DecoderUnCheckNum}\033[0m"
   echo "issue bitstream can be found in .../AllTestData/${TestFolder}/issue"
   echo "detail result  can be found in .../AllTestData/${TestFolder}/result"
-  echo "***********************************************************"
+  echo  -e "\033[32m *********************************************************** \033[0m"
   echo ""
   echo "${TestSetIndex}_${TestSequenceName}">${CaseSummaryFile}
   echo "total case  Num     , ${TotalCaseNum}" >>${CaseSummaryFile}
@@ -448,6 +448,7 @@ runOutputPassNum()
   echo "DecoderUpPassedNum  , ${DecoderUpPassedNum}" >>${CaseSummaryFile}
   echo "DecoderUnCheckNum   , ${DecoderUnCheckNum}" >>${CaseSummaryFile}
   echo "  detail file located in ../AllTestData/${TestSetIndex}/result" >>${CaseSummaryFile}
+  echo  -e "\033[32m *********************************************************** \033[0m"
   #generate All case Flag
   if [  ! ${EncoderUnPassedNum} -eq 0  ]
   then

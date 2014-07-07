@@ -99,12 +99,11 @@ runGetYUVFullPath()
   fi
   #generate SHA-1 table
   ./run_SHA1ForOneTestSequenceAllCases.sh   ${TestYUVName}  ${TestYUVFullPath}  ${OutPutCaseFile}
-    if [  ! $? -eq 0 ]
+   if [  ! $? -eq 0 ]
   then
-    echo "Not All Cass pass!!!"
+	cp  ./result/*    ${FinalResultDir}
     exit 1
   else
-    echo "all cases pass!!"
     cp  ./result/*    ${FinalResultDir}
     exit 0
   fi
