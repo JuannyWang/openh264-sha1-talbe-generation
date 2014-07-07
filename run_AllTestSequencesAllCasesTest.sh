@@ -109,8 +109,7 @@ runAllTestBitstream()
     echo ""
     echo "test YUV is ${TestYUV}"
     echo ""
-    #*******************************
-    ./run_OneBitStream.sh  ${StreamFullPath}  ${FinalResultDir}  ${ConfigureFile}
+    ./run_OneTestYUV.sh  ${TestYUV}  ${FinalResultDir}  ${ConfigureFile}
     if [  ! $? -eq 0 ]
     then
       echo -e "\033[31m not all test cases have been passed! \033[0m"

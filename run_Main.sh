@@ -67,20 +67,20 @@ runMain()
   echo ""
   echo "running all test cases for all bit streams......"
   echo ""
-  ./run_AllBitStreamAllCasesTest.sh  ${AllTestDataFolder}  ${FinalResultDir} ${ConfigureFile}
+  ./run_AllTestSequencesAllCasesTest.sh   ${AllTestDataFolder}  ${FinalResultDir} ${ConfigureFile}
   if [ ! $? -eq 0 ]
   then
     echo ""
     echo -e "\033[31m failed: not all cases for all bit stream are passed ! \033[0m"
     echo ""
-    ./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}>CopySHA1Table.log
+    cp  ${FinalResultDir}/*_AllCase_SHA1_Table.csv  ./${SH1TableFolder}
     runPromptINfo
     exit 1
   else
     echo ""
     echo -e "\033[32m all cases of  all bit streams have been passed! \033[0m"
     echo ""
-    ./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}>CopySHA1Table.log
+    cp  ${FinalResultDir}/*_AllCase_SHA1_Table.csv  ./${SH1TableFolder}
     runPromptINfo
     exit 0
   fi

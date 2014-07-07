@@ -15,49 +15,78 @@
 #
 # brief:
 #      --start point of one bit stream
-#      --usage: run_OneBitStream.sh ${StreamFileFullPath}  ${FinalResultDir}  ${ConfigureFile}
+#      --usage: run_OneBitStream.sh ${TestYUVName}  ${FinalResultDir}  ${ConfigureFile}
 #
 #
 #date:  10/06/2014 Created
 #***************************************************************************************
-
- #usage:  runMain ${StreamFileFullPath}  ${FinalResultDir}
+#usage: runGetYUVFullPath  ${TestYUVName}  ${ConfigureFile}
+runGetYUVFullPath()
+{
+  if [ ! $# -eq 2  ]
+  then
+    echo "usage: runGetYUVFullPath  \${TestYUVName}  \${ConfigureFile} "
+	return 1
+  fi
+  
+  local TestYUVName=$1
+  local ConfigureFile=$2
+  
+  local YUVDir=""
+  
+  while read line 
+  do
+    if [[  $line =~ ^TestYUVDir  ]]
+	then
+	  YUVDir=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+	  break
+	fi 
+  done <${ConfigureFile}
+  
+  if [  ! -d ${YUVDir} ]
+  then
+	echo "YUV directory setting is not correct,${YUVDir} does not exist! "
+	exit 1
+  fi
+  TestYUVFullPath=`./run_GetYUVPath.sh  ${TestYUVName}  ${YUVDir}`
+  echo " TestYUVFullPath is ${TestYUVFullPath}"
+  echo ""
+  if [ -f ${TestYUVFullPath}  ]
+  then
+    return 0
+  else
+    return 1 
+  fi
+ 
+}
+ #usage:  runMain ${TestYUVName}  ${FinalResultDir}  ${ConfigureFile}
  runMain()
  {
-
-   if [ ! $# -eq 3 ]
+  if [ ! $# -eq 3 ]
   then
-    echo "usage: runMain \${StreamFileFullPath}  \${FinalResultDir} \${ConfigureFile} "
-    echo "detected by run_OneBitStream.sh"
+    echo "usage: runMain \${TestYUVName}  \${FinalResultDir} \${ConfigureFile} "
+    echo "detected by run_TestYUV.sh"
     return 1
   fi
-
-  local StreamFileFullPath=$1
+  local TestYUVName=$1
   local FinalResultDir=$2
   local ConfigureFile=$3
-
-  local CurrentDir=`pwd`
-  local TestYUVName=""
+  TestYUVFullPath=""
+   
+  local CurrentDir=`pwd` 
   local OutPutCaseFile=""
-
-  #bit stream to YUV
-  ./run_BitStreamToYUV.sh  ${StreamFileFullPath}
-  if [  ! $? -eq 0 ]
-  then
-    echo "failed to translate bit stream to yuv !"
-    exit 1
-  fi
-
-  TestYUVName=`echo  ./*.yuv`
-  TestYUVName=`echo ${TestYUVName} | awk 'BEGIN {FS="/"}  {print $NF}   ' `
   ConfigureFile=`echo ${ConfigureFile} | awk 'BEGIN {FS="/"} {print $NF}'`
-  echo ""
-  echo  "TestYUVName is ${TestYUVName}"
-
   OutPutCaseFile=${TestYUVName}_AllCase.csv
   echo ""
+  echo  "TestYUVName is ${TestYUVName}" 
   echo "OutPutCaseFile is  ${OutPutCaseFile}"
-
+  runGetYUVFullPath  ${TestYUVName}  ${ConfigureFile}
+  if [ ! $? -eq 0 ]
+  then
+	echo "Failed to parse YUV full path info"
+	exit 1
+  fi
+  
   #Case generation
   echo ""
   echo "CurrentDir is ${CurrentDir}"
@@ -69,7 +98,7 @@
     exit 1
   fi
   #generate SHA-1 table
-  ./run_SHA1ForOneStreamAllCases.sh   ${TestYUVName}   ${OutPutCaseFile}
+  ./run_SHA1ForOneTestSequenceAllCases.sh   ${TestYUVName}  ${TestYUVFullPath}  ${OutPutCaseFile}
     if [  ! $? -eq 0 ]
   then
     echo "Not All Cass pass!!!"
@@ -79,13 +108,9 @@
     cp  ./result/*    ${FinalResultDir}
     exit 0
   fi
-
- }
-
-
-StreamFileFullPath=$1
+}
+TestYUVName=$1
 FinalResultDir=$2
 ConfigureFile=$3
-runMain ${StreamFileFullPath}  ${FinalResultDir}  ${ConfigureFile}
-
+runMain ${TestYUVName}  ${FinalResultDir}  ${ConfigureFile}
 
