@@ -308,7 +308,7 @@ runParseCheckResult()
       then
         let "EncoderUnPassedNum++"
         let "DecoderUnCheckNum++"
-        EncoderCheckResult="1:Encoder failed,Encoded number is not equal to setting!"
+        EncoderCheckResult="1:Encoder failed--Encoded number is not equal to setting!"
         DecoderCheckResult="3:Dec cannot check"
         return 1
       fi
