@@ -25,15 +25,11 @@
 #***************************************************************************************
 runPromptINfo()
  {
-
   echo ""
   echo  -e "\033[32m Final result can be found in ./FinaleRestult \033[0m"
   echo  -e "\033[32m SHA1 table can be found in ./SHA1Table \033[0m"
   echo ""
-
-
  }
-
 runMain()
  {
   if [ ! $# -eq 1 ]
@@ -42,59 +38,52 @@ runMain()
     echo "      eg:   ./run_Main.sh  ../CaseConfigure/case.cfg "
     exit 1
   fi
-
   local ConfigureFile=$1
-
   if [  ! -f ${ConfigureFile} ]
   then
     echo "Configure file not exist!, please double check in "
     echo " usage may looks like:   ./run_Main.sh  ../CaseConfigure/case.cfg "
     exit 1
   fi
-
    #dir translation
   AllTestDataFolder="AllTestData"
-  TestBitStreamFolder="BitStreamForTest"
   CodecFolder="Codec"
   ScriptFolder="Script"
   SH1TableFolder="SHA1Table"
   ConfigureFolder="CaseConfigure"
   FinalResultDir="FinalResult"
-
   echo ""
   echo ""
   echo "prepare for all test data......."
   echo ""
    # prepare for all test data
-   ./run_PrepareAllTestData.sh    ${AllTestDataFolder}  ${TestBitStreamFolder}  ${CodecFolder}  ${ScriptFolder}  ${ConfigureFolder}
+   ./run_PrepareAllTestData.sh    ${AllTestDataFolder}  ${CodecFolder}  ${ScriptFolder}  ${ConfigureFile}
   if [ ! $? -eq 0 ]
   then
     echo "failed to prepared  test space for all test data!"
     exit 1
   fi
-
   echo ""
   echo ""
   echo "running all test cases for all bit streams......"
   echo ""
-  ./run_AllBitStreamAllCasesTest.sh   ${TestBitStreamFolder} ${AllTestDataFolder}  ${FinalResultDir} ${ConfigureFile}
+  ./run_AllBitStreamAllCasesTest.sh  ${AllTestDataFolder}  ${FinalResultDir} ${ConfigureFile}
   if [ ! $? -eq 0 ]
   then
     echo ""
     echo -e "\033[31m failed: not all cases for all bit stream are passed ! \033[0m"
     echo ""
-    ./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}>SHA1Table.log
+    ./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}>CopySHA1Table.log
     runPromptINfo
     exit 1
   else
     echo ""
     echo -e "\033[32m all cases of  all bit streams have been passed! \033[0m"
     echo ""
-    ./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}>SHA1Table.log
+    ./run_CopySHA1Table.sh  ${FinalResultDir}  ${SH1TableFolder}>CopySHA1Table.log
     runPromptINfo
     exit 0
   fi
-
 }
 ConfigureFile=$1
 runMain  ${ConfigureFile}

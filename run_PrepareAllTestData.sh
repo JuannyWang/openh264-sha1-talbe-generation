@@ -55,7 +55,7 @@ runGetTestYUVList()
       TestSet4=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
     elif  [[ "$line" =~ ^TestSet5  ]]
     then
-      TestSet5`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+      TestSet5=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
     elif  [[ "$line" =~ ^TestSet6  ]]
     then
       TestSet6=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
@@ -72,16 +72,15 @@ runGetTestYUVList()
 runPrepareALlFolder()
 {
   #parameter check!
-  if [ ! $# -eq 5  ]
+  if [ ! $# -eq 4  ]
   then
-    echo "usage: usage: run_PrepareAllTestFolder.sh    \$AllTestDataFolder  \$TestBitStreamFolder  \$CodecFolder  \$ScriptFolder \$ConfigureFile"
+    echo "usage: usage: run_PrepareAllTestFolder.sh    \$AllTestDataFolder  \$CodecFolder  \$ScriptFolder \$ConfigureFile"
     return 1
   fi
   local AllTestDataFolder=$1
-  local TestBitStreamFolder=$2
-  local CodecFolder=$3
-  local ScriptFolder=$4
-  local ConfigureFile=$5
+  local CodecFolder=$2
+  local ScriptFolder=$3
+  local ConfigureFile=$4
   local SubFolder=""
   local IssueFolder="issue"
   local TempDataFolder="TempData"
@@ -132,11 +131,10 @@ runPrepareALlFolder()
   done
 }
 AllTestDataFolder=$1
-TestBitStreamFolder=$2
-CodecFolder=$3
-ScriptFolder=$4
-ConfigureFile=$5
-runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFile
+CodecFolder=$2
+ScriptFolder=$3
+ConfigureFile=$4
+runPrepareALlFolder   $AllTestDataFolder    $CodecFolder  $ScriptFolder  $ConfigureFile
 echo ""
 echo ""
 
