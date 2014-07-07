@@ -300,7 +300,7 @@ runParseCheckResult()
   RecYUVSize=`runGetFileSize ${RecYUVFile}`
   ActualEncoded=`runGetEncodedNum  ${EncoderLog} `
   #check the encoder number is the same with setting number
-  if [ ${RCMode} -eq 0  ]
+  if [ ${RCMode} -eq -1  ]
   then
     if [ ${EncodedNum} -eq -1  ]
     then
