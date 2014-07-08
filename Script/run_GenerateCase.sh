@@ -46,6 +46,12 @@ runParseYUVInfo()
   then
     let "FPS=10"
   fi
+   
+  if [  ${FPS} -gt 50  ]
+  then
+    let "FPS=50"
+  fi
+  
   
   return 0
 }

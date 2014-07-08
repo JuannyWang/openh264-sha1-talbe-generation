@@ -43,6 +43,24 @@ runGlobalVariableInitial()
   aYUVInfo=(`./run_ParseYUVInfo.sh  ${TestSequenceName}`)
   PicW=${aYUVInfo[0]}
   PicH=${aYUVInfo[1]}
+  FPS=${aYUVInfo[2]}
+  
+  if [  ${PicW} -eq 0 -o ${PicH} -eq 0  ]
+  then
+	echo "YUVName is not correct,should be named as ABC_PicWXPicH_FPS.yuv"
+	exit 1
+  fi
+  
+  if [  ${FPS} -eq 0  ]
+  then
+    let "FPS=10"
+  fi
+   
+  if [  ${FPS} -gt 50  ]
+  then
+    let "FPS=50"
+  fi
+  
   #test cfg file and test info output file
   ConfigureFile=welsenc.cfg
   AllCasePassStatusFile="${FinalResultPath}/${TestSequenceName}_AllCaseOutput.csv"
@@ -168,7 +186,7 @@ runEncodeOneCase()
     -lconfig 0 layer2.cfg        \
     -sw   ${PicW} -sh   ${PicH}  \
     -dw 0 ${PicW} -dh 0 ${PicH}  \
-    -frout 0  30                 \
+    -frout 0  ${FPS}             \
     -ltarb 0  ${EncoderCommandValue[4]} \
     ${EncoderCommandSet[0]}  ${EncoderCommandValue[0]}  \
     ${EncoderCommandSet[1]}  ${EncoderCommandValue[1]}  \
@@ -189,11 +207,11 @@ runEncodeOneCase()
     ${EncoderCommandSet[16]} ${EncoderCommandValue[16]}"
   echo ""
   echo "case line is :"
-  EncoderCommand="./h264enc  ${CaseCommand}  -bf   ${BitStreamFile}  -org   ${TestSequencePath}/${TestSequenceName}  -drec 0 ${RecYUVFile}"
+  EncoderCommand="./h264enc  ${CaseCommand}  -bf   ${BitStreamFile}  -org   ${InputYUV}  -drec 0 ${RecYUVFile}"
   echo ${EncoderCommand}
-  ./h264enc ${CaseCommand}     \
-    -bf     ${BitStreamFile}   \
-    -org    ${InputYUV} \
+  ./h264enc ${CaseCommand}   \
+    -bf     ${BitStreamFile} \
+    -org    ${InputYUV}      \
     -drec 0 ${RecYUVFile} >${EncoderLog}
 }
 #usage: runGetFileSize  $FileName
