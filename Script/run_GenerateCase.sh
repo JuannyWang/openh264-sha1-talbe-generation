@@ -321,11 +321,11 @@ runSecondStageCase()
           SliceNumber=(0)
         fi
         #for slice number based on different thread number
-        if [ $SlcMode -eq 2   -o  $SlcMode -eq 3  ]
+        if [ $SlcMode -eq 0  ]
         then
-          ThreadNumber=${MultipleThreadIdc[@]}
+          ThreadNumber=( 1 )
         else
-          ThreadNumber=(1)
+          ThreadNumber=( ${MultipleThreadIdc[@]})
         fi
         for SlcNum in ${SliceNumber[@]}
         do
