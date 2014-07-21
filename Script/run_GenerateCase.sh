@@ -77,7 +77,10 @@ runGlobalVariableInital()
 	declare -a  aTargetBitrateSet
 	declare -a  aInitialQP
 	declare -a  aSliceMode
-	declare -a  aSliceNum
+	declare -a  aSliceNum0
+	declare -a  aSliceNum1
+	declare -a  aSliceNum2
+	declare -a  aSliceNum3
 	declare -a  aMultipleThreadIdc
 	declare -a  aEnableLongTermReference
 	declare -a  aLoopFilterDisableIDC
@@ -226,9 +229,21 @@ runParseCaseConfigure()
 		elif [[ "$line" =~ ^MaxNalSize ]]
 		then
 			MaxNalSize=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-		elif [[ "$line" =~ ^SliceNum ]]
+		elif [[ "$line" =~ ^SliceNum0 ]]
 		then
-			aSliceNum=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+			aSliceNum0=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^SliceNum1 ]]
+		then
+			aSliceNum1=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^SliceNum2 ]]
+		then
+			aSliceNum2=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^SliceNum3 ]]
+		then
+			aSliceNum3=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^SliceNum4 ]]
+		then
+			aSliceNum4=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
 		elif [[ "$line" =~ ^IntraPeriod ]]
 		then
 			aIntraPeriod=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
@@ -260,6 +275,33 @@ runParseCaseConfigure()
 	done <$ConfigureFile
 	
 	
+}
+#usage: runGetSliceNume  $SliceMd
+runGetSliceNume()
+{
+	if [ ! $# -eq 1  ]
+	then
+		echo "usage: runGetSliceNume  \$SliceMd"
+		return 1
+	fi
+	local SlicMdIndex=$1
+	
+	if [ ${SlicMdIndex} -eq 0 ]
+	then
+		echo ${aSliceNum0[@]}
+	elif [  ${SlicMdIndex} -eq 1 ]
+	then
+		echo ${aSliceNum1[@]}
+	elif [  ${SlicMdIndex} -eq 2 ]
+	then
+		echo ${aSliceNum2[@]}
+	elif [  ${SlicMdIndex} -eq 3 ]
+	then
+		echo ${aSliceNum3[@]}
+	elif [  ${SlicMdIndex} -eq 4 ]
+	then
+		echo ${aSliceNum4[@]}
+	fi	
 }
 #the first stage for case generation
 runFirstStageCase()
@@ -319,12 +361,7 @@ runSecondStageCase()
 		then
 			for SlcMode in ${aSliceMode[@]}
 			do
-				if [ $SlcMode -eq 0 ]
-				then
-				  aSliceNumber=(0)
-				else
-				  aSliceNumber=(${aSliceNum[@]})
-				fi
+				aSliceNumber=( `runGetSliceNume  $SlcMode ` )
 				#for slice number based on different thread number
 				if [ $SlcMode -eq 0  ]
 				then
@@ -538,5 +575,4 @@ OutputCaseFile=$3
 echo ""
 echo "case generating ......"
 runMain  ${ConfigureFile}   ${TestSequence}   ${OutputCaseFile} 
-
 
