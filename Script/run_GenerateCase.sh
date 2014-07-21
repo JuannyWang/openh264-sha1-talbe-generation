@@ -116,10 +116,10 @@ runMultiLayerInitial()
 	
 	#set spatial layer resolution
 	#may look like 360 640   720 1280   0 0   0 0
-	aSpatialLayerResolutionSet1=(`./run_GetMultiLayerSpatialResolutionInfo.sh ${PicW} ${PicH} 1`)
-	aSpatialLayerResolutionSet2=(`./run_GetMultiLayerSpatialResolutionInfo.sh ${PicW} ${PicH} 2`) 
-	aSpatialLayerResolutionSet3=(`./run_GetMultiLayerSpatialResolutionInfo.sh ${PicW} ${PicH} 3`)
-	aSpatialLayerResolutionSet4=(`./run_GetMultiLayerSpatialResolutionInfo.sh ${PicW} ${PicH} 4`)
+	aSpatialLayerResolutionSet1=(`./run_GetSpatialLayerResolutionInfo.sh ${PicW} ${PicH} 1`)
+	aSpatialLayerResolutionSet2=(`./run_GetSpatialLayerResolutionInfo.sh ${PicW} ${PicH} 2`) 
+	aSpatialLayerResolutionSet3=(`./run_GetSpatialLayerResolutionInfo.sh ${PicW} ${PicH} 3`)
+	aSpatialLayerResolutionSet4=(`./run_GetSpatialLayerResolutionInfo.sh ${PicW} ${PicH} 4`)
 	#may look like: 200 400 800 0 , 50 300 600 0 ,
 	aSpatialLayerBRSet1=(`./run_GetSpatialLayerBitRateSet.sh  $PicW  $PicH $FPS  1 $ConfigureFile `)
 	aSpatialLayerBRSet2=(`./run_GetSpatialLayerBitRateSet.sh  $PicW  $PicH $FPS  2 $ConfigureFile `)
@@ -530,7 +530,7 @@ runMain()
   runFirstStageCase
   runSecondStageCase
   runThirdStageCase
-  #runAfterGenerate
+  runAfterGenerate
 }
 ConfigureFile=$1
 TestSequence=$2

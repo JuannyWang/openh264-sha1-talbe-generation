@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 #***********************************************************************************************
@@ -174,7 +173,7 @@ runMain()
   
   #calculate 4 layers' resolution
   #aSpatailResolution=(PicWLayer_0 PicHLayer_0  PicWLayer_1 PicHLayer_1 PicWLayer_2 PicHLayer_2 PicWLayer_3 PicHLayer_3  )
-  aSpatailResolution=( `./run_SetMultiLayerSpatialResolutionInfo.sh $PicW $PicH  4` )
+  aSpatailResolution=( `./run_GetSpatialLayerResolutionInfo.sh  $PicW $PicH  4` )
 
   #get layer's test bit rate point based on configure file
   aTestBRPointForLayer0=(`./run_GetTargetBitRate.sh  ${aSpatailResolution[0]} ${aSpatailResolution[1]} ${FPS} ${ConfigureFile} `)
@@ -192,5 +191,4 @@ FPS=$3
 SpatialNum=$4
 ConfigureFile=$5
 runMain  $PicW  $PicH $FPS  $SpatialNum $ConfigureFile
-
 
