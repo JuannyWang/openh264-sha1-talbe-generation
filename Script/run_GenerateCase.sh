@@ -23,432 +23,481 @@
 #usage:  runParseYUVInfo  ${YUVName}
 runParseYUVInfo()
 {
- if [ ! $# -eq 1 ]
-  then
-    echo "usage:  usage  runGetTargetBitRate  \${YUVName}"
-    return 1
-  fi
-    
-  declare -a aYUVInfo
-  aYUVInfo=(`./run_ParseYUVInfo.sh  ${TestSequence}`)
-  PicW=${aYUVInfo[0]}
-  PicH=${aYUVInfo[1]}
-  FPS=${aYUVInfo[2]}
-  
-   
-  if [  ${PicW} -eq 0 -o ${PicH} -eq 0  ]
-  then
-	echo "YUVName is not correct,should be named as ABC_PicWXPicH_FPS.yuv"
-	exit 1
-  fi
-  
-  if [  ${FPS} -eq 0  ]
-  then
-    let "FPS=10"
-  fi
-   
-  if [  ${FPS} -gt 50  ]
-  then
-    let "FPS=50"
-  fi
-  
-  
-  return 0
-}
-#usage  runGetTargetBitRate  
-#eg:    input:  runGetTargetBitRate  
-#       output:    1500  800 300   100   (for test_1920X1080.yuv)
-runGetTargetBitRate()
-{
- 
-  declare -a aTargetBitRate
-  
-  let " TotalPix=PicW*PicH"
-  let "NumBitRatePoint=0"
-  let "BitRateFactor=$FPS/10"
-  if [  ${TotalPix} -le ${Flag_QCIF} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_QCIF} )
-  elif [  ${TotalPix} -le ${Flag_QVGA} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_QVGA} )
-  elif [  ${TotalPix} -le ${Flag_VGA} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_VGA} ) 
-   elif [  ${TotalPix} -le ${Flag_SVGA} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_SVGA} )
-  elif [  ${TotalPix} -le ${Flag_XGA} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_XGA} )
-  elif [  ${TotalPix} -le ${Flag_SXGA} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_SXGA} )
-  elif [  ${TotalPix} -le ${Flag_WSXGA} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_WSXGA} )
-  elif [  ${TotalPix} -le ${Flag_WUXGA} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_WUXGA} )
-  elif [  ${TotalPix} -le ${Flag_QXGA} ]
-  then
-    aTargetBitRate=( ${TargetBitRate_QXGA} )
-  fi
-  
-  NumBitRatePoint=${#aTargetBitRate[@]}
-  
-  for((i=0; i< ${NumBitRatePoint}; i++))
-  do
-    let "TargetBitrate[$i]=${aTargetBitRate[$i]}*${BitRateFactor}"
-  done
-  
+	if [ ! $# -eq 1 ]
+	then
+		echo "usage:  usage  runGetTargetBitRate  \${YUVName}"
+		return 1
+	fi
+	declare -a aYUVInfo
+	aYUVInfo=(`./run_ParseYUVInfo.sh  ${TestSequence}`)
+	PicW=${aYUVInfo[0]}
+	PicH=${aYUVInfo[1]}
+	FPS=${aYUVInfo[2]}
+	if [  ${PicW} -eq 0 -o ${PicH} -eq 0  ]
+	then
+		echo "YUVName is not correct,should be named as ABC_PicWXPicH_FPS.yuv"
+		exit 1
+	fi
+	if [  ${FPS} -eq 0  ]
+	then
+		let "FPS=10"
+	elif [  ${FPS} -gt 50  ]
+		then
+		let "FPS=50"
+	fi
+	return 0
 }
 #usage:   runCaseVilidationcheck  \$CaseInfo
 runCaseVilidationcheck()
 {
-  if [ ! $# -lt 2 ]
-  then
-    echo "usage:   runCaseVilidationcheck  \$CaseInfo "
-    return 1
-  fi
-  echo "to do"
+	if [ ! $# -lt 2 ]
+	then
+		echo "usage:   runCaseVilidationcheck  \$CaseInfo "
+		return 1
+	fi
+	echo "to do"
 }
 #usage  runGlobalVariableInital  $TestSequence  $OutputCaseFile
 runGlobalVariableInital()
 {
-  if [ ! $# -eq 2 ]
-  then
-    echo "usage:   runGlobalVariableInital  \$TestSequence  \$OutputCaseFile "
-    return 1
-  fi
-  local  TestSequence=$1
-  local  OutputCaseFile=$2
-  let " FramesToBeEncoded = 0"
-  let " MaxNalSize = 0"
-  declare -a NumTempLayer
-  declare -a  UsageType
-  declare -a  RCMode
-  declare -a  IntraPeriod
-  declare -a  TargetBitrate
-  declare -a  InitialQP
-  declare -a  SliceMode
-  declare -a  SliceNum
-  declare -a  MultipleThreadIdc
-  declare -a  EnableLongTermReference
-  declare -a  LoopFilterDisableIDC
-  declare -a  EnableDenoise
-  declare -a  EnableSceneChangeDetection
-  declare -a  EnableBackgroundDetection
-  declare -a  EnableAdaptiveQuantization
-  TargetBitRate_QCIF=""     #176x144,   for those resolution: PicWXPicH <=176x144
-  TargetBitRate_QVGA=""     #320x240,   for those resolution: 176x144    <  PicWXPicH <= 320x240	
-  TargetBitRate_VGA=""      #640x480,   for those resolution: 320x240    <  PicWXPicH <= 640x480	 	
-  TargetBitRate_SVGA=""     #800x600,   for those resolution: 640x480    <  PicWXPicH <= 800x600		
-  TargetBitRate_XGA=""      #1024x768,  for those resolution: 800x600    <  PicWXPicH <= 1024x768
-  TargetBitRate_SXGA=""     #1280x1024, for those resolution: 1024x768   <  PicWXPicH <= 1280x1024
-  TargetBitRate_WSXGA=""    #1680x1050, for those resolution: 1280x1024  <  PicWXPicH <= 1680x1050
-  TargetBitRate_WUXGA=""    #1920x1200, for those resolution: 1680x1050  <  PicWXPicH <= 1920x1200
-  TargetBitRate_QXGA=""     #2048x1536, for those resolution: 1920x1200  <  PicWXPicH <= 2048x1536   
- 
-  let "Flag_QCIF  =176*144"
-  let "Flag_QVGA  =320*240"
-  let "Flag_VGA   =640*480"
-  let "Flag_SVGA  =800*600"
-  let "Flag_XGA   =1024*768"
-  let "Flag_SXGA  =1280*1024"
-  let "Flag_WSXGA =1680*1050"
-  let "Flag_WUXGA =1920*1200"
-  let "Flag_QXGA  =2048*1536"  
-  
-  let "PicW=0"
-  let "PicH=0"
-  let "FPS=0"
-  runParseYUVInfo  ${TestSequence}
-  
-  #generate test cases and output to case file
-  casefile=${OutputCaseFile}
-  casefile_01=${OutputCaseFile}_01.csv
-  casefile_02=${OutputCaseFile}_02.csv
+	if [ ! $# -eq 2 ]
+	then
+	echo "usage:   runGlobalVariableInital  \$TestSequence  \$OutputCaseFile "
+	return 1
+	fi
+	local  TestSequence=$1
+	local  OutputCaseFile=$2
+	let " FramesToBeEncoded = 0"
+	let " MaxNalSize = 0"
+	declare -a  aNumSpatialLayer
+	declare -a  aNumTempLayer
+	declare -a  aUsageType
+	declare -a  aRCMode
+	declare -a  aIntraPeriod
+	declare -a  aTargetBitrateSet
+	declare -a  aInitialQP
+	declare -a  aSliceMode
+	declare -a  aSliceNum
+	declare -a  aMultipleThreadIdc
+	declare -a  aEnableLongTermReference
+	declare -a  aLoopFilterDisableIDC
+	declare -a  aEnableDenoise
+	declare -a  aEnableSceneChangeDetection
+	declare -a  aEnableBackgroundDetection
+	declare -a  aEnableAdaptiveQuantization
+	MultiLayerResolutionInfo="0,0,   0,0,   0,0,  0,0"
+	declare -a aSpatialLayerResolutionSet1
+	declare -a aSpatialLayerResolutionSet2
+	declare -a aSpatialLayerResolutionSet3
+	declare -a aSpatialLayerResolutionSet4
+	declare -a aSpatialLayerBRSet1
+	declare -a aSpatialLayerBRSet2
+	declare -a aSpatialLayerBRSet3
+	declare -a aSpatialLayerBRSet4
+	let "PicW=0"
+	let "PicH=0"
+	let "FPS=0"
+	let "MultiLayerFlag=0"
+	#generate test cases and output to case file
+	casefile=${OutputCaseFile}
+	casefile_01=${OutputCaseFile}_01.csv
+	casefile_02=${OutputCaseFile}_02.csv
+}
+runMultiLayerInitial()
+{
+	runParseYUVInfo  ${TestSequence}
+	MultiLayerNum=`./run_GetSpatialLayerNum.sh  ${PicW}  ${PicH}`
+	if [  ${MultiLayerFlag} -eq 1  ]
+	then
+		aNumSpatialLayer=( ${MultiLayerNum} )
+	else
+		aNumSpatialLayer=(1)
+	fi
+	
+	#set spatial layer resolution
+	#may look like 360 640   720 1280   0 0   0 0
+	aSpatialLayerResolutionSet1=(`./run_GetMultiLayerSpatialResolutionInfo.sh ${PicW} ${PicH} 1`)
+	aSpatialLayerResolutionSet2=(`./run_GetMultiLayerSpatialResolutionInfo.sh ${PicW} ${PicH} 2`) 
+	aSpatialLayerResolutionSet3=(`./run_GetMultiLayerSpatialResolutionInfo.sh ${PicW} ${PicH} 3`)
+	aSpatialLayerResolutionSet4=(`./run_GetMultiLayerSpatialResolutionInfo.sh ${PicW} ${PicH} 4`)
+	#may look like: 200 400 800 0 , 50 300 600 0 ,
+	aSpatialLayerBRSet1=(`./run_GetSpatialLayerBitRateSet.sh  $PicW  $PicH $FPS  1 $ConfigureFile `)
+	aSpatialLayerBRSet2=(`./run_GetSpatialLayerBitRateSet.sh  $PicW  $PicH $FPS  2 $ConfigureFile `)
+	aSpatialLayerBRSet3=(`./run_GetSpatialLayerBitRateSet.sh  $PicW  $PicH $FPS  3 $ConfigureFile `)
+	aSpatialLayerBRSet4=(`./run_GetSpatialLayerBitRateSet.sh  $PicW  $PicH $FPS  4 $ConfigureFile `)
+}
+#usage:  runGenerateMultiLayerBRSet ${SpatialNum}
+#e.g:    --input:  runGenerateMultiLayerBRSet 2
+#        --output: "1000,200,800,0, 0,"  "1500,500,1000,0,0"
+#                   "OverAllBR, BRLayer0,BRLayer1,BRLayer2,BRLayer3,"
+runGenerateMultiLayerBRSet()
+{
+	if [ ! $# -eq 1 ]
+	then
+	echo "usage:  runGenerateMultiLayerBRSet \${SpatialNum}"
+	exit 1
+	fi
+	local SpatialNum=$1
+	local TempLayerBRInfo=""
+	local TempIndex=""
+	local TempTotalNum=""
+	local OverallBR="0"
+	declare -a aTempLayerBRInfo
+	if [ ${SpatialNum} -eq 1 ]
+	then
+		TempLayerBRInfo="${aSpatialLayerBRSet1[@]}"
+	elif  [ ${SpatialNum} -eq 2 ]
+	then
+		TempLayerBRInfo="${aSpatialLayerBRSet2[@]}"
+	elif  [ ${SpatialNum} -eq 3 ]
+	then
+		TempLayerBRInfo="${aSpatialLayerBRSet3[@]}"
+	elif  [ ${SpatialNum} -eq 4 ]
+	then
+		TempLayerBRInfo="${aSpatialLayerBRSet4[@]}"
+	fi
+	aTempLayerBRInfo=(`echo ${TempLayerBRInfo}  | awk ' BEGIN  {FS=","}  {for(i=1;i<=NF;i++) printf(" %s",$i) }'`)
+	let "TempTotalNum = ${#aTempLayerBRInfo[@]}"
+	let  "TempIndex=0"
+	for ((i=0;i<${TempTotalNum}; i+=4))
+	do
+	#bc tool to calculate overall target bit rate
+		OverallBR=`echo "scale=2; ${aTempLayerBRInfo[$i+0]}+${aTempLayerBRInfo[$i+1]}+${aTempLayerBRInfo[$i+2]}+${aTempLayerBRInfo[$i+3]}" | bc`
+		aTargetBitrateSet[${TempIndex}]="${OverallBR},${aTempLayerBRInfo[$i+0]},${aTempLayerBRInfo[$i+1]},${aTempLayerBRInfo[$i+2]},${aTempLayerBRInfo[$i+3]},"
+		let  "TempIndex ++"
+	done
+}
+#usage: runGenerateLayerResolution ${SpatialNum}
+runGenerateLayerResolution()
+{
+	if [ ! $# -eq 1 ]
+	then
+		echo "usage: runGenerateLayerResolution  \${SpatialNum}"
+		exit 1
+	fi
+	local SpatialNum=$1
+	local TempLayerResolution=""
+	if [ ${SpatialNum} -eq 1 ]
+	then
+		TempLayerResolution="${aSpatialLayerResolutionSet1[@]}"
+	elif  [ ${SpatialNum} -eq 2 ]
+	then
+		TempLayerResolution="${aSpatialLayerResolutionSet2[@]}"
+	elif  [ ${SpatialNum} -eq 3 ]
+	then
+		TempLayerResolution="${aSpatialLayerResolutionSet3[@]}"
+	elif  [ ${SpatialNum} -eq 4 ]
+	then
+		TempLayerResolution="${aSpatialLayerResolutionSet4[@]}"
+	fi
+	MultiLayerResolutionInfo=`echo ${TempLayerResolution} |awk '{for(i=1;i<=NF;i++) printf("%s,",$i)}' `
 }
 #usage:  runParseCaseConfigure $ConfigureFile
 runParseCaseConfigure()
 {
-  #parameter check!
-  if [ ! $# -eq 1  ]
-  then
-    echo "usage:  runParseCaseConfigure \$ConfigureFile"
-    return 1
-   fi
-  local ConfigureFile=$1
-  #read configure file
-  while read line
-  do
-    if [[ "$line" =~ ^FramesToBeEnc  ]]
-    then
-      FramesToBeEncoded=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
-    elif [[ "$line" =~ ^UsageType ]]
-    then
-      UsageType=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^TemporalLayerNum ]]
-    then
-      NumTempLayer=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^MultipleThreadIdc ]]
-    then
-      MultipleThreadIdc=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^SliceMode ]]
-    then
-      SliceMode=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^MaxNalSize ]]
-    then
-      MaxNalSize=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^SliceNum ]]
-    then
-      SliceNum=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^IntraPeriod ]]
-    then
-      IntraPeriod=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^RCMode ]]
-    then
-      RCMode=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^EnableLongTermReference ]]
-    then
-      EnableLongTermReference=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^LoopFilterDisableIDC ]]
-    then
-      LoopFilterDisableIDC=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^InitialQP ]]
-    then
-      InitialQP=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^EnableDenoise ]]
-    then
-      EnableDenoise=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^EnableSceneChangeDetection ]]
-    then
-      EnableSceneChangeDetection=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^EnableBackgroundDetection ]]
-    then
-      EnableBackgroundDetection=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    elif [[ "$line" =~ ^EnableAdaptiveQuantization ]]
-    then
-      EnableAdaptiveQuantization=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
-    fi
+	#parameter check!
+	if [ ! $# -eq 1  ]
+	then
+		echo "usage:  runParseCaseConfigure \$ConfigureFile"
+		return 1
+	fi
+	local ConfigureFile=$1
+	#read configure file
+	while read line
+	do
+		if [[ "$line" =~ ^FramesToBeEnc  ]]
+		then
+			FramesToBeEncoded=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+		elif [[ "$line" =~ ^UsageType ]]
+		then
+			aUsageType=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^MultiLayer ]]
+		then
+			MultiLayerFlag=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^TemporalLayerNum ]]
+		then
+			aNumTempLayer=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^MultipleThreadIdc ]]
+		then
+			aMultipleThreadIdc=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^SliceMode ]]
+		then
+			aSliceMode=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^MaxNalSize ]]
+		then
+			MaxNalSize=`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `
+		elif [[ "$line" =~ ^SliceNum ]]
+		then
+			aSliceNum=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^IntraPeriod ]]
+		then
+			aIntraPeriod=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^RCMode ]]
+		then
+			aRCMode=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^EnableLongTermReference ]]
+		then
+			aEnableLongTermReference=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^LoopFilterDisableIDC ]]
+		then
+			aLoopFilterDisableIDC=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^InitialQP ]]
+		then
+			aInitialQP=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^EnableDenoise ]]
+		then
+			aEnableDenoise=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^EnableSceneChangeDetection ]]
+		then
+			aEnableSceneChangeDetection=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^EnableBackgroundDetection ]]
+		then
+			aEnableBackgroundDetection=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		elif [[ "$line" =~ ^EnableAdaptiveQuantization ]]
+		then
+			aEnableAdaptiveQuantization=(`echo $line | awk 'BEGIN {FS="[#:]"} {print $2}' `)
+		fi
+	done <$ConfigureFile
 	
-	#get target bit rate setting
-	if [[ "$line" =~ ^TargetBitRate_QCIF  ]]
-    then
-      TargetBitRate_QCIF=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
-    elif [[ "$line" =~ ^TargetBitRate_QVGA  ]]
-    then
-      TargetBitRate_QVGA=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
-    elif [[ "$line" =~ ^TargetBitRate_VGA  ]]
-    then
-      TargetBitRate_VGA=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
-    elif [[ "$line" =~ ^TargetBitRate_SVGA  ]]
-    then
-      TargetBitRate_SVGA=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `	
-    elif [[ "$line" =~ ^TargetBitRate_XGA  ]]
-    then
-      TargetBitRate_XGA=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
-    elif [[ "$line" =~ ^TargetBitRate_SXGA  ]]
-    then
-      TargetBitRate_SXGA=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `	
-    elif [[ "$line" =~ ^TargetBitRate_WSXGA+  ]]
-    then
-      TargetBitRate_WSXGA=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `	
-    elif [[ "$line" =~ ^TargetBitRate_WUXGA  ]]
-    then
-      TargetBitRate_WUXGA=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `	
-    elif [[ "$line" =~ ^TargetBitRate_QXGA  ]]
-    then
-      TargetBitRate_QXGA=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `	
-    fi
-  done <$ConfigureFile
+	
 }
 #the first stage for case generation
 runFirstStageCase()
 {
-  for NumLayer in ${NumTempLayer[@]}
-  do
-    for ScreenSignal in ${UsageType[@]}
-    do
-      for RCModeIndex in ${RCMode[@]}
-      do
-        ## set RCMode QP and BitRate value based on RCMode
-        declare -a QPforTest
-        declare -a BitRateforTest
-        if [[  "$RCModeIndex" =~  "-1"  ]]
-        then
-          QPforTest=${InitialQP[@]}
-          BitRateforTest=(256)
-        else
-          QPforTest=(26)
-          BitRateforTest=${TargetBitrate[@]}
-        fi
-        #......for loop.........................................#
-        for QPIndex in ${QPforTest[@]}
-        do
-          for BitRateIndex in ${BitRateforTest[@]}
-          do
-            echo   "$FramesToBeEncoded,\
-                $NumLayer, \
-                $ScreenSignal,\
-                $RCModeIndex,\
-                $BitRateIndex,\
-                $QPIndex">>$casefile_01
-          done # BitRate loop
-        done # QP loop
-      done #RCMode loop
-      #..........................................................#
+    declare -a aQPforTest
+	
+	for ScreenSignal in ${aUsageType[@]}
+	do
+		for NumSpatialLayer in ${aNumSpatialLayer[@]}
+		do
+			for NumTempLayer in ${aNumTempLayer[@]}
+			do
+				for RCModeIndex in ${aRCMode[@]}
+				do			  
+					if [[  "$aRCModeIndex" =~  "-1"  ]]
+					then
+						aQPforTest=${aInitialQP[@]}
+						aTargetBitrateSet=("256,256,256,256,")
+					else
+						aQPforTest=(26)
+						runGenerateMultiLayerBRSet ${NumSpatialLayer}
+					fi
+					#......for loop.........................................#
+					for QPIndex in ${aQPforTest[@]}
+					do
+						for BitRateIndex in ${aTargetBitrateSet[@]}
+						do						 						  
+							runGenerateLayerResolution   ${NumSpatialLayer}
+							echo "$ScreenSignal, \
+								$FramesToBeEncoded,\
+								${NumSpatialLayer},\
+								$NumTempLayer,\
+								${PicW}, ${PicH},\
+								${MultiLayerResolutionInfo}  \
+								${FPS}, ${FPS},${FPS},${FPS},\
+								${QPIndex}, ${QPIndex},\
+								${QPIndex}, ${QPIndex},\
+								${RCModeIndex},\
+								${BitRateIndex}">>$casefile_01
+						done
+					done
+				done 
+			done
+		done 
     done
-  done
 }
 ##second stage for case generation
 runSecondStageCase()
 {
-  while read FirstStageCase
-  do
-    for IntraPeriodIndex in ${IntraPeriod[@]}
-    do
-      for SlcMode in ${SliceMode[@]}
-      do
-        #for slice number based on different sliceMode
-        declare -a SliceNumber
-        declare -a ThreadNumber
-        if [ $SlcMode -eq 1 ]
-        then
-          SliceNumber=(4 7)
-        else
-          SliceNumber=(0)
-        fi
-        #for slice number based on different thread number
-        if [ $SlcMode -eq 0  ]
-        then
-          ThreadNumber=( 1 )
-        else
-          ThreadNumber=( ${MultipleThreadIdc[@]} )
-        fi
-        for SlcNum in ${SliceNumber[@]}
-        do
-          for ThreadNum in ${ThreadNumber[@]}
-          do
-            if  [[ $FirstStageCase =~ ^[-0-9]  ]]
-            then
-              echo   "$FirstStageCase,\
-                  $IntraPeriodIndex,\
-                  $SlcMode, \
-                  $SlcNum,\
-                  $ThreadNum">>$casefile_02
-            fi
-          done #threadNum loop
-        done #sliceNum loop
-      done #Slice Mode loop
-    done # Entropy loop
+	#for slice number based on different aSliceMode
+	declare -a aSliceNumber
+	declare -a ThreadNumber
+	local MaxNalSize="1500"
+	while read FirstStageCase
+	do
+		if  [[ $FirstStageCase =~ ^[-0-9]  ]]
+		then
+			for SlcMode in ${aSliceMode[@]}
+			do
+				if [ $SlcMode -eq 0 ]
+				then
+				  aSliceNumber=(0)
+				else
+				  aSliceNumber=(${aSliceNum[@]})
+				fi
+				#for slice number based on different thread number
+				if [ $SlcMode -eq 0  ]
+				then
+				  ThreadNumber=( 1 )
+				else
+				  ThreadNumber=( ${aMultipleThreadIdc[@]} )
+				fi
+				
+				if [  $SlcMode -eq 4  ]
+				then
+					let "MaxNalSize= ${MaxNalSize}"
+				else
+					let "MaxNalSize= 0"
+				fi	
+				
+				for SlcNum in ${aSliceNumber[@]}
+				do
+					for  aIntraPeriodIndex in ${aIntraPeriod[@]}
+					do
+						for ThreadNum in ${ThreadNumber[@]}
+						do						
+							if [ ${SlcMode} -eq 1 -a ${SlcNum} -eq 4   ]
+							then
+								echo "$FirstStageCase\
+								1,4,\
+								1,1,\
+								1,1,\
+								1,1,\
+								${MaxNalSize},\
+								$aIntraPeriodIndex,\
+								$ThreadNum">>$casefile_02							
+							else
+								echo "$FirstStageCase\
+								${SlcMode}, ${SlcNum},\
+								${SlcMode}, ${SlcNum},\
+								${SlcMode}, ${SlcNum},\
+								${SlcMode}, ${SlcNum},\
+								${MaxNalSize},       \
+								${aIntraPeriodIndex},\
+								${ThreadNum}">>$casefile_02
+							fi
+						
+						done #threadNum loop
+					done #aSliceNum loop
+				done #Slice Mode loop
+			done # Entropy loop
+		fi
   done <$casefile_01
 }
 #the third stage for case generation
 runThirdStageCase()
 {
-  local SliceMd=""
-  local ActualNalSize=""
-  local DenoiseFlag=""
-  local SceneChangeFlag=""
-  local BackgroundFlag=""
-  local AQFlag=""
-  declare -a CaseInfo
-  while read SecondStageCase
-  do
-    if [[ $SecondStageCase =~ ^[-0-9]  ]]
-    then
-      for LTRFlag in ${EnableLongTermReference[@]}
-      do
-        for LoopfilterIndex in ${LoopFilterDisableIDC[@]}
-        do
-                  for  DenoiseFlag in ${EnableDenoise[@]}
-          do
-            for  SceneChangeFlag in ${EnableSceneChangeDetection[@]}
-            do
-              for  BackgroundFlag in ${EnableBackgroundDetection[@]}
-              do
-                for  AQFlag in ${EnableAdaptiveQuantization}
-                do
-                  CaseInfo=(`echo $SecondStageCase | awk 'BEGIN {FS=","} {for(i=1;i<=NF;i++) printf("%s  ", $i)}'`)
-                  SliceMd=${CaseInfo[7]}
-                  if [  $SliceMd -eq 4  ]
-                  then
-                    let "ActualNalSize= ${MaxNalSize}"
-                  else
-                    let "ActualNalSize= 0"
-                  fi
-                  echo "$SecondStageCase,\
-                      $LTRFlag,\
-                      $LoopfilterIndex,\
-                      $ActualNalSize,\
-                      ${DenoiseFlag},\
-                      ${SceneChangeFlag},\
-                      ${BackgroundFlag},\
-                      ${AQFlag}">>$casefile
-                done
-              done
-            done
-          done
-        done
-      done
-    fi
-  done <$casefile_02
+	local SliceMd=""
+	local DenoiseFlag=""
+	local SceneChangeFlag=""
+	local BackgroundFlag=""
+	local AQFlag=""
+	declare -a CaseInfo
+	
+	while read SecondStageCase
+	do
+		if [[ $SecondStageCase =~ ^[-0-9]  ]]
+		then
+			for LTRFlag in ${aEnableLongTermReference[@]}
+			do
+				for LoopfilterIndex in ${aLoopFilterDisableIDC[@]}
+				do
+					for  DenoiseFlag in ${aEnableDenoise[@]}
+					do
+						for  SceneChangeFlag in ${aEnableSceneChangeDetection[@]}
+						do
+							for  BackgroundFlag in ${aEnableBackgroundDetection[@]}
+							do
+								for  AQFlag in ${aEnableAdaptiveQuantization}
+								do
+									echo "$SecondStageCase,\
+										$LTRFlag,\
+										$LoopfilterIndex,\
+										${DenoiseFlag},\
+										${SceneChangeFlag},\
+										${BackgroundFlag},\
+										${AQFlag}">>$casefile
+								done
+							done
+						done
+					done
+				done
+			done
+		fi
+	done <$casefile_02
 }
 #only for test
 runOutputParseResult()
 {
-  echo "PicW X PicH_FPS is ${PicW} x ${PicH}_${FPS}"
-  echo "all case info has been  output to file $casefile "
-  echo "Frames=           $FramesToBeEncoded"
-  echo "NumTempLayer=     ${NumTempLayer[@]}"
-  echo "UsageType= ${UsageType[@]}"
-  echo "MaxNalSize=        $MaxNalSize"
-  echo "RCMode=           ${RCMode[@]}"
-  echo "TargetBitrate=    ${TargetBitrate[@]}"
-  echo "InitialQP=        ${InitialQP[@]}"
-  echo "IntraPeriod=      ${IntraPeriod}"
-  echo "SliceMode=         ${SliceMode[@]}"
-  echo "SliceNum=          ${SliceNum[@]}"
-  echo "MultipleThreadIdc= ${MultipleThreadIdc[@]}"
-  echo "EnableLongTermReference=${EnableLongTermReference[@]}"
-  echo "LoopFilterDisableIDC=   ${LoopFilterDisableIDC[@]}"
-  echo "EnableDenoise=                ${EnableDenoise[@]}"
-  echo "EnableSceneChangeDetection=   ${EnableSceneChangeDetection[@]}"
-  echo "EnableBackgroundDetection=    ${EnableBackgroundDetection[@]}"
-  echo "EnableAdaptiveQuantization=   ${EnableAdaptiveQuantization[@]}"
-  
-  echo "TargetBitRate_QCIF=   ${TargetBitRate_QCIF}"    
-  echo "TargetBitRate_QVGA=   ${TargetBitRate_QVGA}"     
-  echo "TargetBitRate_VGA=    ${TargetBitRate_VGA}"     
-  echo "TargetBitRate_SVGA=   ${TargetBitRate_SVGA}"     		
-  echo "TargetBitRate_XGA=    ${TargetBitRate_XGA}"    
-  echo "TargetBitRate_SXGA=   ${TargetBitRate_SXGA}"   
-  echo "TargetBitRate_WSXGA=  ${TargetBitRate_WSXGA}"  
-  echo "TargetBitRate_WUXGA=  ${TargetBitRate_WUXGA}"   
-  echo "TargetBitRate_QXGA=   ${TargetBitRate_QXGA}"  
-  
+    echo ""
+	echo "PicWxPicH_FPS is ${PicW}x${PicH}_${FPS}"
+	echo "all case info has been  output to file $casefile "
+	echo "aUsageType=         ${aUsageType[@]}"
+	echo "Frames=             $FramesToBeEncoded"
+	echo "aNumSpatialLayer=   ${aNumSpatialLayer[@]}"
+	echo "aNumTempLayer=      ${aNumTempLayer[@]}"
+	echo "MaxNalSize=         $MaxNalSize"
+	echo "aRCMode=            ${aRCMode[@]}"
+	echo "aInitialQP=         ${aInitialQP[@]}"
+	echo "aIntraPeriod=       ${aIntraPeriod}"
+	echo "aSliceMode=         ${aSliceMode[@]}"
+	echo "aSliceNum=          ${aSliceNum[@]}"
+	echo "aMultipleThreadIdc= ${aMultipleThreadIdc[@]}"
+	echo "aEnableLongTermReference=      ${aEnableLongTermReference[@]}"
+	echo "aLoopFilterDisableIDC=         ${aLoopFilterDisableIDC[@]}"
+	echo "aEnableDenoise=                ${aEnableDenoise[@]}"
+	echo "aEnableSceneChangeDetection=   ${aEnableSceneChangeDetection[@]}"
+	echo "aEnableBackgroundDetection=    ${aEnableBackgroundDetection[@]}"
+	echo "aEnableAdaptiveQuantization=   ${aEnableAdaptiveQuantization[@]}"
+	echo ""
+	echo "aSpatialLayerResolutionSet1  is ${aSpatialLayerResolutionSet1[@]}"
+	echo "aSpatialLayerResolutionSet2  is ${aSpatialLayerResolutionSet2[@]}"
+	echo "aSpatialLayerResolutionSet3  is ${aSpatialLayerResolutionSet3[@]}"
+	echo "aSpatialLayerResolutionSet4  is ${aSpatialLayerResolutionSet4[@]}"
+	echo ""
+	echo "aSpatialLayerBRSet1 is ${aSpatialLayerBRSet1[@]}"
+	echo "aSpatialLayerBRSet2 is ${aSpatialLayerBRSet2[@]}"
+	echo "aSpatialLayerBRSet3 is ${aSpatialLayerBRSet3[@]}"
+	echo "aSpatialLayerBRSet4 is ${aSpatialLayerBRSet4[@]}"
 }
 runBeforeGenerate()
 {
-  headline="FramesToBeEncoded,\
-          NumTempLayer, \
-          UsageType,\
-          RCMode,\
-          TargetBitrate,\
-          InitialQP,\
-          IntraPeriod,\
-          SliceMode,\
-          SliceNum,\
-          MultipleThreadIdc,\
-          EnableLongTermReference,\
-          LoopFilterDisableIDC,\
-          MaxNalSize,\
-          DenoiseFlag,\
-          SceneChangeFlag,\
-          BackgroundFlag,\
-          AQFlag"
+  headline="UsageType, \
+		EncodedNum,   \
+		NumSpaceLayer,\
+		NumTempLayer, \
+		PicWidth,  \
+		PicHeiht,  \
+		PicWLayer0,\
+		PicHLayer0,\
+		PicWLayer1,\
+		PicHLayer1,\
+		PicWLayer2,\
+		PicHLayer2,\
+		PicWLayer3,\
+		PicHLayer3,\
+		FPSLayer0,\
+		FPSLayer1,\
+		FPSLayer2,\
+		FPSLayer3,\
+		QPLayer0,\
+		QPLayer1,\
+		QPLayer2,\
+		QPLayer3,\
+		RCMode,\
+		BROverAll,\
+		BRLayer0,\
+		BRLayer1,\
+		BRLayer2,\
+		BRLayer3,\
+		SliceMdLayer0, \
+		SliceNmuLayer0,\
+		SliceMdLayer1, \
+		SliceNmuLayer1,\
+		SliceMdLayer2, \
+		SliceNmuLayer2,\
+		SliceMdLayer3, \
+		SliceNmuLayer3,\
+		MaxNalSize,\
+		IntraPeriod,\
+		MultipleThreadIdc,\
+		EnableLongTermReference,\
+		LoopFilterDisableIDC,\
+		DenoiseFlag,\
+		SceneChangeFlag,\
+		BackgroundFlag,\
+		AQFlag"
+		  
   echo $headline>$casefile
   echo $headline>$casefile_01
   echo $headline>$casefile_02
@@ -456,8 +505,8 @@ runBeforeGenerate()
 runAfterGenerate()
 {
   #deleted temp_case file
-  rm -f $casefile_01
-  rm -f $casefile_02
+  ./run_SafeDelete.sh $casefile_01
+  ./run_SafeDelete.sh $casefile_02
 }
 #usage:   runMain   $Case.cfg   $TestSequence  $OutputCaseFile
 runMain()
@@ -470,20 +519,24 @@ runMain()
   local ConfigureFile=$1
   local TestSequence=$2
   local OutputCaseFile=$3
-  runGlobalVariableInital  $TestSequence  $OutputCaseFile
-  runBeforeGenerate
+  
+  runGlobalVariableInital  $TestSequence  $OutputCaseFile 
+  
   runParseCaseConfigure  ${ConfigureFile}
-  runGetTargetBitRate  
+  runMultiLayerInitial
+ 
+  runBeforeGenerate
   runOutputParseResult
   runFirstStageCase
   runSecondStageCase
   runThirdStageCase
-  runAfterGenerate
+  #runAfterGenerate
 }
 ConfigureFile=$1
 TestSequence=$2
 OutputCaseFile=$3
 echo ""
 echo "case generating ......"
-runMain  ${ConfigureFile}   ${TestSequence}   ${OutputCaseFile}
+runMain  ${ConfigureFile}   ${TestSequence}   ${OutputCaseFile} 
+
 
