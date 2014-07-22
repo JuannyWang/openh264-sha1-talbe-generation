@@ -112,7 +112,10 @@ runCopyFile()
   cp -f ${OpenH264Dir}/h264enc  ${CodecDir}
   cp -f ${OpenH264Dir}/h264dec  ${CodecDir}
 
-  cp -f ${OpenH264Dir}/testbin/layer2.cfg      ${CodecDir}
+  cp -f ${OpenH264Dir}/testbin/layer2.cfg      ${CodecDir}/layer0.cfg
+  cp -f ${OpenH264Dir}/testbin/layer2.cfg      ${CodecDir}/layer1.cfg
+  cp -f ${OpenH264Dir}/testbin/layer2.cfg      ${CodecDir}/layer2.cfg
+  cp -f ${OpenH264Dir}/testbin/layer2.cfg      ${CodecDir}/layer3.cfg
   cp -f ${OpenH264Dir}/testbin/welsenc.cfg     ${CodecDir}
 
   cp -f ${OpenH264Dir}/res/*.264     ${BitStreamFileDir}
