@@ -379,7 +379,7 @@ runSecondStageCase()
 				
 				for SlcNum in ${aSliceNumber[@]}
 				do
-					for  aIntraPeriodIndex in ${aIntraPeriod[@]}
+					for  IntraPeriodIndex in ${aIntraPeriod[@]}
 					do
 						for ThreadNum in ${ThreadNumber[@]}
 						do						
@@ -400,7 +400,7 @@ runSecondStageCase()
 								${SlcMode}, ${SlcNum},\
 								${SlcMode}, ${SlcNum},\
 								${MaxNalSize},       \
-								${aIntraPeriodIndex},\
+								${IntraPeriodIndex},\
 								${ThreadNum}">>$casefile_02
 							fi
 						

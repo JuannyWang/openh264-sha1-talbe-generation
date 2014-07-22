@@ -42,22 +42,26 @@ runGlobalVariableInitial()
 	AllCaseConsoleLogFile="${FinalResultPath}/${TestYUVName}.TestLog"
 	CaseSummaryFile="${FinalResultPath}/${TestYUVName}.Summary"
 	echo  "EncoderFlag,DecoderFlag,SHA-1, MD5, BitStreamSize, YUVSize,\
-			-scrsig,  -frms,  -numl,  -numtl,-sh, -sw,\
+			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
 			-dw 0, -dh 0, -dw 1, -dh 1,-dw 2, -dh 2, -dw 3, -dh 3,\
 			-frout 0,  -frout 1, -frout 2, -frout 3,\
 			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
-			-rc,-tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\ 
-			-nalsize, -iper, -thread, -ltr, -db, -denois,\ 
+			-rc,-tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
+			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
+			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
+			-nalsize, -iper, -thread, -ltr, -db, -denois,\
 			-scene    -bgd    -aq ">${AllCasePassStatusFile}
 	echo  "SHA-1 Value, MD5String, BitStreamSize, YUVSize, \
-			-scrsig,  -frms,  -numl,  -numtl,-sh, -sw,\
+			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
 			-dw 0, -dh 0, -dw 1, -dh 1,-dw 2, -dh 2, -dw 3, -dh 3,\
 			-frout 0,  -frout 1, -frout 2, -frout 3,\
 			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
-			-rc,-tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\ 
-			-nalsize, -iper, -thread, -ltr, -db, -denois,\ 
+			-rc,-tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
+			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
+			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
+			-nalsize, -iper, -thread, -ltr, -db, -denois,\
 			-scene    -bgd    -aq ">${AllCaseSHATableFile}
-
+			
 	#encoder parameters  change based on the case info
 	let "EncoderPassedNum=0"
 	let "EncoderUnPassedNum=0"
@@ -148,7 +152,7 @@ runAllCaseTest()
 			let "TotalCaseNum++"
 		fi
 	done <$AllCaseFile
-	runOutputPassNum
+
 }
 #usage runOutputPassNum
 runOutputPassNum()
@@ -210,5 +214,6 @@ TestYUVName=$1
 InputYUV=$2
 AllCaseFile=$3
 runMain  ${TestYUVName}  ${InputYUV}  ${AllCaseFile}
+
 
 
