@@ -81,6 +81,7 @@ runGlobalVariableInital()
 	declare -a  aSliceNum1
 	declare -a  aSliceNum2
 	declare -a  aSliceNum3
+	declare -a  aSliceNum4
 	declare -a  aMultipleThreadIdc
 	declare -a  aEnableLongTermReference
 	declare -a  aLoopFilterDisableIDC
@@ -391,7 +392,7 @@ runSecondStageCase()
 								1,1,\
 								1,1,\
 								${MaxNalSize},\
-								$aIntraPeriodIndex,\
+								$IntraPeriodIndex,\
 								$ThreadNum">>$casefile_02							
 							else
 								echo "$FirstStageCase\
@@ -468,7 +469,11 @@ runOutputParseResult()
 	echo "aInitialQP=         ${aInitialQP[@]}"
 	echo "aIntraPeriod=       ${aIntraPeriod}"
 	echo "aSliceMode=         ${aSliceMode[@]}"
-	echo "aSliceNum=          ${aSliceNum[@]}"
+	echo "aSliceNum0=         ${aSliceNum0[@]}"
+	echo "aSliceNum1=         ${aSliceNum1[@]}"
+	echo "aSliceNum2=         ${aSliceNum2[@]}"
+	echo "aSliceNum3=         ${aSliceNum3[@]}"
+	echo "aSliceNum4=         ${aSliceNum4[@]}"
 	echo "aMultipleThreadIdc= ${aMultipleThreadIdc[@]}"
 	echo "aEnableLongTermReference=      ${aEnableLongTermReference[@]}"
 	echo "aLoopFilterDisableIDC=         ${aLoopFilterDisableIDC[@]}"
