@@ -132,6 +132,30 @@ runSetLayerInfo()
 	OutputYUVLayer_1=`runRenameOutPutYUV  ${OriginYUVName}   ${LayerWidth_1} ${LayerHeight_1}`
 	OutputYUVLayer_2=`runRenameOutPutYUV  ${OriginYUVName}   ${LayerWidth_2} ${LayerHeight_2}`
 	OutputYUVLayer_3=`runRenameOutPutYUV  ${OriginYUVName}   ${LayerWidth_3} ${LayerHeight_3}`
+		
+   aLayerWidth=(  ${LayerWidth_3}  ${LayerWidth_2}  ${LayerWidth_1}  ${LayerWidth_0}  )
+   aLayerHeight=( ${LayerHeight_3} ${LayerHeight_2} ${LayerHeight_1} ${LayerHeight_0} )
+   aOutputLayerName=( ${OutputYUVLayer_3} ${OutputYUVLayer_2} ${OutputYUVLayer_1} ${OutputYUVLayer_0} )
+   
+   
+    echo "OutputYUVLayer_0 ${OutputYUVLayer_0}"
+	echo "OutputYUVLayer_1 ${OutputYUVLayer_1}"
+	echo "OutputYUVLayer_2 ${OutputYUVLayer_2}"
+	echo "OutputYUVLayer_3 ${OutputYUVLayer_3}"
+	for((i=0;i<4;i++))
+	do
+		let "PicWRemainder= ${aLayerWidth[$i]}%2"
+		let "PicHRemainder= ${aLayerHeight[$i]}%2"
+		
+		if [ ${PicWRemainder} -eq 1 -o ${PicHRemainder} -eq 1 ]
+		then
+			echo ""
+			echo -e "\033[31m  resolution--${aLayerWidth[$i]}x${aLayerHeight[$i]} is not multiple of 2 \033[0m"
+			echo -e "\033[31m  Prepare failed! Please used another test sequence!\033[0m"
+			echo ""
+			exit 1
+		fi	
+	done
 }	
 #usage: runGetFileSize  $FileName
 runGetFileSize()
@@ -205,16 +229,8 @@ runMain()
 		exit 1
 	fi
 	
+	
 	runSetLayerInfo
-    echo "OutputYUVLayer_0 ${OutputYUVLayer_0}"
-	echo "OutputYUVLayer_1 ${OutputYUVLayer_1}"
-	echo "OutputYUVLayer_2 ${OutputYUVLayer_2}"
-	echo "OutputYUVLayer_3 ${OutputYUVLayer_3}"
-	
-   aLayerWidth=(  ${LayerWidth_3}  ${LayerWidth_2}  ${LayerWidth_1}  ${LayerWidth_0}  )
-   aLayerHeight=( ${LayerHeight_3} ${LayerHeight_2} ${LayerHeight_1} ${LayerHeight_0} )
-   aOutputLayerName=( ${OutputYUVLayer_3} ${OutputYUVLayer_2} ${OutputYUVLayer_1} ${OutputYUVLayer_0} )
-	
 	for ((i=1; i<4; i++ ))
 	do
 		if [ -e ${aOutputLayerName[i]} ]
@@ -247,7 +263,6 @@ runMain()
 	echo ""	
 	
 	return 0
-	
 }
 OriginYUV=$1
 NumberLayer=$2
