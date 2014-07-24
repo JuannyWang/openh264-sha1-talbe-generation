@@ -1,18 +1,18 @@
 #!/bin/bash
-#********************************************************************************
+#*********************************************************************************************
 #  --for multiple layer test, generate input YUV for another spacial layer 
 #
-#  --usage:   run_PrepareMultiLayerInputYUV.sh ${OriginInputYUV} ${LayerNum}
+#  --usage:   run_PrepareMultiLayerInputYUV.sh ${OriginInputYUV} ${LayerNum} ${PrepareLog}
 #                                                       2<=${LayerNum}<=4
 #  --eg:
-#    input:  run_PrepareMultiLayerInputYUV.sh  ../../ABC_1080X720_30fps.yuv   3
+#    input:  run_PrepareMultiLayerInputYUV.sh  ../../ABC_1080X720_30fps.yuv   3  prepare.log
 #    output: there will be tow down sample YUV generated under current directory.
 #            ----ABC_540X360_30fps.yuv
 #            ----ABC_270X180_30fps.yuv
+#            ----prepare.log
+#  --note: YUV name must be named as XXX_PicWxPicH_FPSxxxx.yuv  
 #
-#  --note: YUV name must be named as XXX_PicWxPicH_FPSxxxx.yuv
-#
-#********************************************************************************
+#*********************************************************************************************
 #usage: runGlobalVariableInitial ${OriginYUV}
 runGlobalVariableInitial()
 {
@@ -21,7 +21,6 @@ runGlobalVariableInitial()
 		echo "usage: runGlobalVariableInitial \${OriginYUV}"
 		return 1
 	fi
-
 	OriginYUV=$1
 	OriginYUVName=""
 	OriginWidth=""
@@ -42,12 +41,13 @@ runGlobalVariableInitial()
 	OutputYUVLayer_2=""
 	OutputYUVLayer_3=""
 	
-	
 	DownSampleExe="DownConvertStatic"
 	declare -a aYUVInfo
 	declare -a aLayerWidth
 	declare -a aLayerHeight
 	declare -a aOutputLayerName
+	declare -a aLayerYUVList
+	declare -a aYUVSize
 }
 #usage: runRenameOutPutYUV  ${OriginYUVName} ${OutputWidth}  ${OutputHeight}
 #eg:   
@@ -60,11 +60,9 @@ runRenameOutPutYUV()
 		echo "usage: runRenameOutPutYUV  \${OriginYUVName} \${OutputWidth}  \${OutputHeight}"
 		return 1
 	fi
-
 	local OriginYUVName=$1
 	local OutputWidth=$2
 	local OutputHeight=$3
-
 	local OriginYUVWidth="0"
 	local OriginYUVHeight="0"
 	local OutputYUVName=""
@@ -76,10 +74,8 @@ runRenameOutPutYUV()
 	local Pattern_03="[0-9][0-9]$"
 	local Pattern_04="fps$"
 	local LastItermIndex=""
-
 	aPicInfo=(`echo ${OriginYUVName} | awk 'BEGIN {FS="[_.]"} {for(i=1;i<=NF;i++) printf("%s  ",$i)}'`)
 	let "LastItermIndex=${#aPicInfo[@]} - 1"
-
 	#get PicW PicH info
 	let "Index=0"
 	for  Iterm in ${aPicInfo[@]}
@@ -88,7 +84,6 @@ runRenameOutPutYUV()
 		then			
 			Iterm="${OutputWidth}X${OutputHeight}"
 		fi
-
 		if [  $Index -eq 0 ]
 		then
 			OutputYUVName=${Iterm}
@@ -98,7 +93,6 @@ runRenameOutPutYUV()
 		else
 			OutputYUVName="${OutputYUVName}_${Iterm}"
 		fi
-
 		let "Index++"
 	done
 	echo "${OutputYUVName}"
@@ -108,7 +102,6 @@ runSetLayerInfo()
 {
 	OriginYUVName=`echo ${OriginYUV} | awk 'BEGIN  {FS="/"} {print $NF}'`
 	aYUVInfo=(`./run_ParseYUVInfo.sh  ${OriginYUVName}`)
-
     OriginWidth=${aYUVInfo[0]}
 	OriginHeight=${aYUVInfo[1]}
 	FPS=${aYUVInfo[2]}
@@ -122,43 +115,84 @@ runSetLayerInfo()
 		let "FPS=10"
 	fi
 	
-	if [ $FPS -gt 50 ]
+	if [ $FPS -gt 100 ]
 	then
-		let "FPS=50"
+		let "FPS=100"
 	fi
 	
 	let "LayerWidth_0 = OriginWidth/8 "
 	let "LayerWidth_1 = OriginWidth/4 "
-	let "LayerWidth_2 = OriginWidth/2"
-	let "LayerWidth_3 = OriginWidth "
-
+	let "LayerWidth_2 = OriginWidth/2 "
+	let "LayerWidth_3 = OriginWidth"
 	let "LayerHeight_0 = OriginHeight/8 "
 	let "LayerHeight_1 = OriginHeight/4 "
-	let "LayerHeight_2 = OriginHeight/2"
+	let "LayerHeight_2 = OriginHeight/2 "
 	let "LayerHeight_3 = OriginHeight"
-
 	OutputYUVLayer_0=`runRenameOutPutYUV  ${OriginYUVName}   ${LayerWidth_0} ${LayerHeight_0}`
 	OutputYUVLayer_1=`runRenameOutPutYUV  ${OriginYUVName}   ${LayerWidth_1} ${LayerHeight_1}`
 	OutputYUVLayer_2=`runRenameOutPutYUV  ${OriginYUVName}   ${LayerWidth_2} ${LayerHeight_2}`
 	OutputYUVLayer_3=`runRenameOutPutYUV  ${OriginYUVName}   ${LayerWidth_3} ${LayerHeight_3}`
-
 }	
-
-
-#usage: run_PrepareMultiLayerInputYUV.sh ${OriginYUV} ${NumberLayer}
+#usage: runGetFileSize  $FileName
+runGetFileSize()
+{
+	if [ ! -e $1   ]
+	then
+		echo ""
+		echo "file $1 does not exist!"
+		echo "usage: runGetFileSize  $FileName!"
+		echo ""
+		return 1
+	fi
+	local FileName=$1
+	local FileSize=""
+	local TempInfo=""
+	
+	TempInfo=`ls -l $FileName`
+	FileSize=`echo $TempInfo | awk '{print $5}'`
+	echo $FileSize
+	
+}
+#usage: runSetLayerYUVSize
+runSetLayerYUVSize()
+{		
+	aLayerYUVList=( ${OriginYUV}  ${OutputYUVLayer_2} ${OutputYUVLayer_1} ${OutputYUVLayer_0} )
+	for ((i=0; i<4; i++ ))
+	do
+		if [ -e ${aLayerYUVList[$i]}  ]
+		then
+			aYUVSize[$i]=`runGetFileSize  ${aLayerYUVList[$i]}`
+		else
+			aYUVSize[$i]="0"		
+		fi	
+	done
+}
+#usage:runOutputPrepareLog
+runOutputPrepareLog()
+{
+	echo "">${PrepareLog}
+	for ((i=0; i<4; i++ ))
+	do
+		let "LayerIndex=3-$i"
+		echo "LayerName_${LayerIndex}:  ${aLayerYUVList[$i]}">>${PrepareLog}  
+		echo "LayerSize_${LayerIndex}:  ${aYUVSize[$i]}">>${PrepareLog}  
+	done
+}
+#usage: run_PrepareMultiLayerInputYUV.sh ${OriginYUV} ${NumberLayer} ${PrepareLog}
 runMain()
 {
-	if [ ! $# -eq 2 ]
+	if [ ! $# -eq 3 ]
 	then
-		echo "usage: run_PrepareMultiLayerInputYUV.sh \${OriginYUV} \${NumberLayer}"
+		echo "usage: run_PrepareMultiLayerInputYUV.sh \${OriginYUV} \${NumberLayer} \${PrepareLog}"
 		exit 1
 	fi
 	
 	OriginYUV=$1
 	NumberLayer=$2
+	PrepareLog=$3
+	let "PrepareFlag=0"
 	
 	runGlobalVariableInitial ${OriginYUV}
-
 	if [ ! -f ${OriginYUV}  ]
 	then
 		echo "origin yuv does not exist! please double check!--${OriginYUV}"
@@ -172,7 +206,6 @@ runMain()
 	fi
 	
 	runSetLayerInfo
-
     echo "OutputYUVLayer_0 ${OutputYUVLayer_0}"
 	echo "OutputYUVLayer_1 ${OutputYUVLayer_1}"
 	echo "OutputYUVLayer_2 ${OutputYUVLayer_2}"
@@ -182,17 +215,43 @@ runMain()
    aLayerHeight=( ${LayerHeight_3} ${LayerHeight_2} ${LayerHeight_1} ${LayerHeight_0} )
    aOutputLayerName=( ${OutputYUVLayer_3} ${OutputYUVLayer_2} ${OutputYUVLayer_1} ${OutputYUVLayer_0} )
 	
+	for ((i=1; i<4; i++ ))
+	do
+		if [ -e ${aOutputLayerName[i]} ]
+		then
+			./run_SafeDelete.sh  ${aOutputLayerName[i]}
+		fi		
+	done
+	
 	#down sample start from 1/2 PicW layer
 	for ((i=1; i<${NumberLayer}; i++ ))
 	do
 		./${DownSampleExe}  ${OriginWidth} ${OriginHeight} ${OriginYUV}  ${aLayerWidth[$i]} ${aLayerHeight[i]}  ${aOutputLayerName[i]}
+		if [ ! $? -eq 0 ]
+		then
+			let "PrepareFlag=1"
+		fi
 	done
+	
+	if [ ! ${PrepareFlag} -eq 0 ]
+	then
+		echo ""
+		echo -e "\033[31m multilayer input YUV preparation failed! \033[0m"
+		echo ""
+		exit 1
+	fi
+	runSetLayerYUVSize
+	runOutputPrepareLog
+	echo ""
+	echo -e "\033[32m multilayer input YUV preparation succeed! \033[0m"
+	echo ""	
 	
 	return 0
 	
 }
 OriginYUV=$1
 NumberLayer=$2
-runMain   ${OriginYUV}  ${NumberLayer}
+PrepareLog=$3
+runMain   ${OriginYUV}  ${NumberLayer} ${PrepareLog}
 
 
