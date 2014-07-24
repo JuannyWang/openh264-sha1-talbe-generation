@@ -23,7 +23,6 @@
 #
 #date:  10/06/2014 Created
 #***************************************************************************************
-
 runGlobalVariableInitial()
 {
 	CurrentDir=`pwd`
@@ -34,7 +33,6 @@ runGlobalVariableInitial()
 	mkdir -p ${FinalResultPath}
 	mkdir -p ${IssueDataPath}
 	mkdir -p ${TempDataPath}
-
 	#test cfg file and test info output file
 	ConfigureFile=welsenc.cfg
 	AllCasePassStatusFile="${FinalResultPath}/${TestYUVName}_AllCaseOutput.csv"
@@ -61,14 +59,81 @@ runGlobalVariableInitial()
 			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
 			-nalsize, -iper, -thread, -ltr, -db, -denois,\
 			-scene    -bgd    -aq ">${AllCaseSHATableFile}
-			
+	
+	let "YUVSizeLayer0=0"
+	let "YUVSizeLayer1=0"
+	let "YUVSizeLayer2=0"
+	let "YUVSizeLayer3=0"
+	
+	YUVFileLayer0=""
+	YUVFileLayer1=""
+	YUVFileLayer2=""
+	YUVFileLayer3=""
+		
 	#encoder parameters  change based on the case info
 	let "EncoderPassedNum=0"
 	let "EncoderUnPassedNum=0"
 	let "DecoderPassedNum=0"
 	let "DecoderUpPassedNum=0"
 	let "DecoderUnCheckNum=0"
-
+}
+runPrepareMultiLayerInfo()
+{
+	local PrepareLog="MultiLayerInputYUVPrepare.log"
+	declare -a aYUVInfo
+	
+	aYUVInfo=(`./run_ParseYUVInfo.sh  ${TestYUVName}`)
+	PicW=${aYUVInfo[0]}
+	PicH=${aYUVInfo[1]}
+	#generate input YUV file for each layer
+	MaxSpatialLayerNum=`./run_GetSpatialLayerNum.sh ${PicW} ${PicH}`
+	./run_PrepareMultiLayerInputYUV.sh ${InputYUV} ${MaxSpatialLayerNum} ${PrepareLog}
+	
+	if [ ! $? -eq 0 ]
+	then
+		echo ""
+		echo -e "\033[31m multilayer input YUV preparation failed! \033[0m"
+		echo ""
+		exit 1	
+	fi
+	
+	#parse multilayer YUV's name and size info	
+	while read line
+	do
+		if [[  $line =~ ^LayerName_0  ]]
+		then
+			YUVFileLayer0=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif [[ $line =~ ^LayerSize_0 ]]
+		then
+			YUVSizeLayer0=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif  [[  $line =~ ^LayerName_1  ]]
+		then
+			YUVFileLayer1=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif [[ $line =~ ^LayerSize_1 ]]
+		then
+			YUVSizeLayer1=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif  [[  $line =~ ^LayerName_2  ]]
+		then
+			YUVFileLayer2=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif [[ $line =~ ^LayerSize_2 ]]
+		then
+			YUVSizeLayer2=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif  [[  $line =~ ^LayerName_3  ]]
+		then
+			YUVFileLayer3=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif [[ $line =~ ^LayerSize_3 ]]
+		then
+			YUVSizeLayer3=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		fi	
+	done <${PrepareLog}
+	echo "YUVFileLayer3:  ${YUVFileLayer3}"
+	echo "YUVSizeLayer3:  ${YUVSizeLayer3}"
+	echo "YUVFileLayer2:  ${YUVFileLayer2}"
+	echo "YUVSizeLayer2:  ${YUVSizeLayer2}"
+	echo "YUVFileLayer1:  ${YUVFileLayer1}"
+	echo "YUVSizeLayer1:  ${YUVSizeLayer1}"
+	echo "YUVFileLayer0:  ${YUVFileLayer0}"
+	echo "YUVSizeLayer0:  ${YUVSizeLayer0}"	
 }
 #usae: runParseCaseCheckLog ${CheckLog}
 runParseCaseCheckLog()
@@ -118,7 +183,6 @@ runParseCaseCheckLog()
 		fi
 	done <${CheckLog}
 }
-
 # run all test case based on XXXcase.csv file
 #usage  runAllCaseTest
 runAllCaseTest()
@@ -134,7 +198,6 @@ runAllCaseTest()
 			echo ""
 			echo ""
 			echo "********************case index is ${TotalCaseNum}**************************************"
-
 			export IssueDataPath
 			export TempDataPath
 			export TestYUVName
@@ -143,6 +206,14 @@ runAllCaseTest()
 			export AllCaseSHATableFile
 			export EncoderLog
 			export CheckLogFile
+			export YUVSizeLayer0
+			export YUVSizeLayer1
+			export YUVSizeLayer2
+			export YUVSizeLayer3
+			export YUVFileLayer0
+			export YUVFileLayer1
+			export YUVFileLayer2
+			export YUVFileLayer3
 			
 			./run_TestOneCase.sh  ${CaseData}
 			runParseCaseCheckLog ${CheckLogFile}
@@ -152,7 +223,6 @@ runAllCaseTest()
 			let "TotalCaseNum++"
 		fi
 	done <$AllCaseFile
-
 }
 #usage runOutputPassNum
 runOutputPassNum()
@@ -180,7 +250,6 @@ runOutputPassNum()
 	echo "DecoderUnCheckNum   , ${DecoderUnCheckNum}" >>${CaseSummaryFile}
 	echo "  detail file located in ../AllTestData/${TestSetIndex}/result" >>${CaseSummaryFile}
 	echo  -e "\033[32m *********************************************************** \033[0m"
-
 	
 	if [  ! ${EncoderUnPassedNum} -eq 0  ]
 	then
@@ -204,16 +273,14 @@ runMain()
 	InputYUV=$2
 	AllCaseFile=$3
 	runGlobalVariableInitial
-
+	runPrepareMultiLayerInfo
+	
 	runAllCaseTest #>${AllCaseConsoleLogFile}
-
 	runOutputPassNum
 }
-
 TestYUVName=$1
 InputYUV=$2
 AllCaseFile=$3
 runMain  ${TestYUVName}  ${InputYUV}  ${AllCaseFile}
-
 
 

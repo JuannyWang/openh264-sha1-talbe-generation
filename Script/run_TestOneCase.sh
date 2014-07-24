@@ -18,14 +18,12 @@
 #
 #date:  10/06/2014 Created
 #***************************************************************************************
-
 runGlobalVariableInitial()
 {
 	#initial command line parameters
 	declare -a EncoderCommandSet
 	declare -a EncoderCommandName
 	declare -a EncoderCommandValue
-
 	BitStreamFile=""
 	RecYUVFileLayer0=""
 	RecYUVFileLayer1=""
@@ -39,6 +37,8 @@ runGlobalVariableInitial()
 	EncoderCheckResult="NULL"
 	DecoderCheckResult="NULL"
 	EncoderCommand="NULL"
+	
+	let "EncoderFlag=0"
 }
 #called by runGlobalVariableInitial
 #usage runEncoderCommandInital
@@ -63,7 +63,6 @@ runEncoderCommandInital()
 					nalsize iper   thread  ltr \
 					db  denois  scene  bgd  aq )	
 	NumParameter=${#EncoderCommandSet[@]}
-
 	for ((i=0;i<NumParameter; i++))
 	do
 		EncoderCommandValue[$i]=0
@@ -86,7 +85,6 @@ runParseCaseInfo()
 	declare -a aTempParamIndex=( 6 7 8 9 10 11 12 13    15 16 17   19 20 21     24 25 26 27   30 31 32 33 34 35  )
 	TempData=`echo $CaseData |awk 'BEGIN {FS="[,\r]"} {for(i=1;i<=NF;i++) printf(" %s",$i)} ' `
 	EncoderCommandValue=(${TempData})
-
 	let "TempParamFlag=0"
 	for((i=0; i<$NumParameter; i++))
 	do
@@ -97,23 +95,18 @@ runParseCaseInfo()
 			let "TempParamFlag=1"
 	  fi
 	done
-
 	if [ ${TempParamFlag} -eq 0 ]
 	then
 		BitstreamPrefix=${BitstreamPrefix}_${EncoderCommandName[$i]}_${EncoderCommandValue[$i]}
 	fi
 	let "TempParamFlag=0"    
 	done
-
 	BitStreamFile=${TempDataPath}/${TestYUVName}_${BitstreamPrefix}_codec_target.264
-
 	RecYUVFileLayer0=${TempDataPath}/${TestYUVName}_rec0.yuv
 	RecYUVFileLayer1=${TempDataPath}/${TestYUVName}_rec1.yuv
 	RecYUVFileLayer2=${TempDataPath}/${TestYUVName}_rec2.yuv
 	RecYUVFileLayer3=${TempDataPath}/${TestYUVName}_rec3.yuv
-
 }
-
 #call by  runAllCaseTest
 #usage  runEncodeOneCase
 runEncodeOneCase()
@@ -124,7 +117,6 @@ runEncodeOneCase()
 	do
 		TempCammand="${TempCammand} ${EncoderCommandSet[$i]}  ${EncoderCommandValue[$i]} " 
 	done
-
 	TempCammand="${EncoderCommandSet[0]} ${EncoderCommandValue[0]} \
 				${EncoderCommandSet[1]}  ${EncoderCommandValue[1]} \
 				${EncoderCommandSet[2]}  ${EncoderCommandValue[2]} \
@@ -146,11 +138,92 @@ runEncodeOneCase()
 		-drec 1 ${RecYUVFileLayer1} \
 		-drec 2 ${RecYUVFileLayer2} \
 		-drec 3 ${RecYUVFileLayer3}>${EncoderLog}
+		
+	if [ $? -eq 0  ]
+	then
+		let "EncoderFlag=0"
+	else
+		let "EncoderFlag=1"
+	fi 
 }
-
+#usage: runGetFileSize  $FileName
+runGetFileSize()
+{
+	if [ ! -e $1   ]
+	then
+		echo ""
+		echo "file $1 does not exist!"
+		echo "usage: runGetFileSize  $FileName!"
+		echo ""
+		return 1
+	fi
+	local FileName=$1
+	local FileSize=""
+	local TempInfo=""
+	TempInfo=`ls -l $FileName`
+	FileSize=`echo $TempInfo | awk '{print $5}'`
+	echo $FileSize
+	
+}
+#usage: runGetEncodedNum  ${EncoderLog}
+runGetEncodedNum()
+{
+	if [ ! -e $1   ]
+	then
+		echo ""
+		echo "file $1 does not exist!"
+		echo "usage: runGetEncodedNum  \${EncoderLog}"
+		return 1
+	fi
+	local EncoderLog=$1
+	local EncodedNum="0"
+	while read line
+	do
+		if [[  ${line}  =~ ^Frames  ]]
+		then
+			EncodedNum=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+			break
+		fi
+	done <${EncoderLog}
+	
+	echo ${EncodedNum}
+}
+runEncoderBasicCheck()
+{
+ if [ !  ${EncoderFlag} -eq 0 ]
+  then
+   
+    return 1
+  fi
+  
+  if [ ${RCMode} -eq -1  ]
+  then
+    if [ -a  ${EncodedNum} -eq -1 ]
+    then
+      if [ ! ${InputYUVSize} -eq ${RecYUVSize} ]
+      then
+        let "EncoderUnPassedNum++"
+        let "DecoderUnCheckNum++"
+        EncoderCheckResult="1:Encoder failed--Encoded number is not equal to setting!"
+        DecoderCheckResult="3:Dec cannot check"
+        return 1
+      fi
+    fi
+    if [ ${EncodedNum} -gt 0  ]
+    then
+      if [ ! ${ActualEncoded} -eq  ${EncodedNum}  ]
+      then
+        let "EncoderUnPassedNum++"
+        let "DecoderUnCheckNum++"
+        EncoderCheckResult="1:Encoder failed,Encoded number is not equal to setting!"
+        DecoderCheckResult="3:Dec cannot check"
+        return 1
+      fi
+    fi
+  fi
+}
 runOutputCheckLog()
 {
-
 	echo  "EncoderPassedNum: 1"
 	echo  "EncoderUnPassedNum: 0"
 	echo  "DecoderPassedNum: 0"
@@ -165,23 +238,20 @@ runOutputCheckLog()
 	echo "DecoderCheckResult: Unchecked"
 	
 }
-
-#usage runOutputCaseStatus  ${CheckLog}
-runOutputCaseStatus()
+#usage runParsetCaseCheckLog  ${CheckLog}
+runParsetCaseCheckLog()
 {
 	if [  ! $# -eq 1  ]
 	then
-		echo "usage: runOutputCaseStatus  \${CheckLog}"
+		echo "usage: runParsetCaseCheckLog  \${CheckLog}"
 		return 1
 	fi
-
 	local CheckLog=$1
 	if [ ! -e ${CheckLog}  ]
 	then
 		echo "check log does not exist!"
 	return 1
 	fi
-
 	while read line
 	do
 		if [[  "$line" =~ ^EncoderCheckResult  ]]
@@ -204,13 +274,9 @@ runOutputCaseStatus()
 			YUVSize=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
 		fi
 	done <${CheckLog} 
-
-
 	 echo " ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}">>${AllCaseSHATableFile}
 	 echo " ${EncoderCheckResult},${DecoderCheckResult}, ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${TestCaseInfo}, ${EncoderCommand} ">>${AllCasePassStatusFile}
-
 }
-
 # usage: runMain $TestYUV  $InputYUV $AllCaseFile
 runMain()
 {
@@ -223,14 +289,22 @@ runMain()
 	TestCaseInfo=$@
 	runGlobalVariableInitial
 	runEncoderCommandInital
-
 	runParseCaseInfo ${TestCaseInfo}
+	
+	echo "YUVFileLayer3:  ${YUVFileLayer3}"
+	echo "YUVSizeLayer3:  ${YUVSizeLayer3}"
+	echo "YUVFileLayer2:  ${YUVFileLayer2}"
+	echo "YUVSizeLayer2:  ${YUVSizeLayer2}"
+	echo "YUVFileLayer1:  ${YUVFileLayer1}"
+	echo "YUVSizeLayer1:  ${YUVSizeLayer1}"
+	echo "YUVFileLayer0:  ${YUVFileLayer0}"
+	echo "YUVSizeLayer0:  ${YUVSizeLayer0}"	
 	runEncodeOneCase
 	runOutputCheckLog>${CheckLogFile}
-	runOutputCaseStatus ${CheckLogFile}
-
+	runParsetCaseCheckLog ${CheckLogFile}
 }
 #call main function
 CaseInfo=$@
 runMain  ${CaseInfo}
+
 
