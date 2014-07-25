@@ -33,13 +33,6 @@ runCheckActulLayerSize()
 	
 	local ActualSpatialNum=$1
 	
-	declare -a aInputLayerYUVSize
-	declare -a aRecYUVLayerSize
-	declare -a aRecYUVFile
-	aInputLayerYUVSize=(${InputYUVSizeLayer0} ${InputYUVSizeLayer1} ${InputYUVSizeLayer2} ${InputYUVSizeLayer3} )
-	aRecYUVFile=(${RecYUVFileLayer0} ${RecYUVFileLayer1} ${RecYUVFileLayer2} ${RecYUVFileLayer3})
-	aRecYUVLayerSize=(0 0 0 0)
-	
 	for((i=0;i<${ActualSpatialNum};i++))
 	do
 		if [ -e ${aRecYUVFile[$i]} ]
@@ -142,27 +135,31 @@ runMain()
 	if [ ! $# -eq 11  ]
 	then
 		echo	""
-		echo  -e "\033[31m Usage: run_CheckEncodedNUm.sh  \033[0m"
-		echo  -e "\033[31m   \$EncoderNum  \$SpatailLayerNum \$InputYUVSizeLayer0 \$InputYUVSizeLayer1 \$InputYUVSizeLayer2 \$InputYUVSizeLayer3 \033[0m"
-		echo  -e "\033[31m   \$RecYUVFileLayer0 \$RecYUVFileLayer1 \$RecYUVFileLayer2 \$RecYUVFileLayer3 \$EncoderLog \033[0m"
+		echo  -e "\033[31m Usage: run_CheckEncodedNum.sh  \$EncoderNum  \$SpatailLayerNum \${EncoderLog} ${aInputLayerYUVSize} \$aRecYUVFile \033[0m"
 		echo ""
 		exit 1
 	fi
 
 	declare -a aParameterSet
+	declare -a aInputLayerYUVSize
+	declare -a aRecYUVLayerSize
+	declare -a aRecYUVFile
+	
 	aParameterSet=($@)
 	
 	EncoderNum=${aParameterSet[0]}
 	SpatailLayerNum=${aParameterSet[1]}
-	InputYUVSizeLayer0=${aParameterSet[2]}
-	InputYUVSizeLayer1=${aParameterSet[3]}
-	InputYUVSizeLayer2=${aParameterSet[4]}
-	InputYUVSizeLayer3=${aParameterSet[5]}
-	RecYUVFileLayer0=${aParameterSet[6]}
-	RecYUVFileLayer1=${aParameterSet[7]}
-	RecYUVFileLayer2=${aParameterSet[8]}
-	RecYUVFileLayer3=${aParameterSet[9]}
-	EncoderLog=${aParameterSet[10]}
+	EncoderLog=${aParameterSet[2]}
+		
+	for((i=0;i<4;i++))
+	do
+		let "YUVSizeIndex=    $i + 3 "
+		let "RecYUVFileIndex= $i + 7"
+		aInputLayerYUVSize[$i]=${aParameterSet[${YUVSizeIndex}]}
+		aRecYUVFile[$i]=${aParameterSet[${RecYUVFileIndex}]}
+	done
+	
+	aRecYUVLayerSize=(0 0 0 0)
 	
 	if [ ${SpatailLayerNum} -lt 1 -o ${SpatailLayerNum} -gt 4 ]
 	then
@@ -170,21 +167,8 @@ runMain()
 		echo  -e "\033[31m spatial layer number is not correct, should be 1<=SpatialNum<=4  \033[0m"
 		echo ""
 		exit 1
-	fi
-	
-		
-	
-	echo ""
-	echo $@
-	echo ${aParameterSet[@]}
-	echo "RecYUVFileLayer0 ${RecYUVFileLayer0}"
-	echo "RecYUVFileLayer1 ${RecYUVFileLayer1}"
-	echo "RecYUVFileLayer2 ${RecYUVFileLayer2}"
-	echo "RecYUVFileLayer3 ${RecYUVFileLayer3}"
-	
-	
-	
-	
+	fi	
+
 	
 	if [ ${EncoderNum} -eq -1 ]
 	then
@@ -204,7 +188,7 @@ runMain()
 		return 0
 	else
 		echo ""
-		echo  -e "\033[32m Actual encoded number does not match with configured number   \033[0m"
+		echo  -e "\033[31m Actual encoded number does not match with configured number   \033[0m"
 		echo ""	
 		return 1
 	fi
