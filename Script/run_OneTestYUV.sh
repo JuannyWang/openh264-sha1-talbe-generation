@@ -23,93 +23,129 @@
 #usage: runGetYUVFullPath  ${TestYUVName}  ${ConfigureFile}
 runGetYUVFullPath()
 {
-  if [ ! $# -eq 2  ]
-  then
-    echo "usage: runGetYUVFullPath  \${TestYUVName}  \${ConfigureFile} "
-	return 1
-  fi
-  
-  local TestYUVName=$1
-  local ConfigureFile=$2
-  
-  local YUVDir=""
-  
-  while read line 
-  do
-    if [[  $line =~ ^TestYUVDir  ]]
+	if [ ! $# -eq 2  ]
 	then
-	  YUVDir=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
-	  break
-	fi 
-  done <${ConfigureFile}
-  
-  if [  ! -d ${YUVDir} ]
-  then
-	echo "YUV directory setting is not correct,${YUVDir} does not exist! "
-	exit 1
-  fi
-  TestYUVFullPath=`./run_GetYUVPath.sh  ${TestYUVName}  ${YUVDir}`
-  echo " TestYUVFullPath is ${TestYUVFullPath}"
-  echo ""
-  if [ -f ${TestYUVFullPath}  ]
-  then
-    return 0
-  else
-    return 1 
-  fi
- 
+		echo "usage: runGetYUVFullPath  \${TestYUVName}  \${ConfigureFile} "
+		return 1
+	fi
+	local TestYUVName=$1
+	local ConfigureFile=$2
+	local YUVDir=""
+	while read line 
+	do
+		if [[  $line =~ ^TestYUVDir  ]]
+		then
+			YUVDir=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+			break
+		fi 
+	done <${ConfigureFile}
+	if [  ! -d ${YUVDir} ]
+	then
+		echo "YUV directory setting is not correct,${YUVDir} does not exist! "
+		exit 1
+	fi
+	TestYUVFullPath=`./run_GetYUVPath.sh  ${TestYUVName}  ${YUVDir}`
+	return $?
 }
- #usage:  runMain ${TestYUVName}  ${FinalResultDir}  ${ConfigureFile}
+#uase: runYUVResolutionCheck  ${YUVName}
+runYUVResolutionCheck()
+{
+	if [ ! $# -eq 1 ]
+	then
+		echo "usage: runYUVResolutionCheck  \${YUVName}"
+		return 1
+	fi
+	local YUVName=$1
+	
+	declare -a aYUVInfo
+	aYUVInfo=(`./run_ParseYUVInfo.sh  ${YUVName}`)
+	PicW=${aYUVInfo[0]}
+	PicH=${aYUVInfo[1]}
+	if [  ${PicW} -eq 0 -o ${PicH} -eq 0  ]
+	then
+		echo "YUVName is not correct,should be named as ABC_PicWXPicH_FPS.yuv"
+		return  1
+	fi
+	
+	let "PicWRemainder= $PicW %16"
+	let "PicHRemainder= $PicH %16"
+	if [  ${PicWRemainder} -gt 0 -o ${PicHRemainder} -gt 0  ]
+	then
+		return 1
+	else
+		return 0
+	fi
+}
+#usage:  runMain ${TestYUVName}  ${FinalResultDir}  ${ConfigureFile}
  runMain()
  {
-  if [ ! $# -eq 3 ]
-  then
-    echo "usage: runMain \${TestYUVName}  \${FinalResultDir} \${ConfigureFile} "
-    echo "detected by run_TestYUV.sh"
-    return 1
-  fi
-  local TestYUVName=$1
-  local FinalResultDir=$2
-  local ConfigureFile=$3
-  TestYUVFullPath=""
-   
-  local CurrentDir=`pwd` 
-  local OutPutCaseFile=""
-  ConfigureFile=`echo ${ConfigureFile} | awk 'BEGIN {FS="/"} {print $NF}'`
-  OutPutCaseFile=${TestYUVName}_AllCase.csv
-  echo ""
-  echo  "TestYUVName is ${TestYUVName}" 
-  echo "OutPutCaseFile is  ${OutPutCaseFile}"
-  runGetYUVFullPath  ${TestYUVName}  ${ConfigureFile}
-  if [ ! $? -eq 0 ]
-  then
-	echo "Failed to parse YUV full path info"
-	exit 1
-  fi
-  
-  #Case generation
-  echo ""
-  echo "CurrentDir is ${CurrentDir}"
-  echo "${ConfigureFile}   ${TestYUVName}   ${OutputCaseFile}"
-  ./run_GenerateCase.sh  ${ConfigureFile}   ${TestYUVName}   ${OutPutCaseFile}
-    if [  ! $? -eq 0 ]
-  then
-    echo "failed to generate cases !"
-    exit 1
-  fi
-  #generate SHA-1 table
-  ./run_SHA1ForOneTestSequenceAllCases.sh   ${TestYUVName}  ${TestYUVFullPath}  ${OutPutCaseFile}
-   if [  ! $? -eq 0 ]
-  then
-	cp  ./result/*    ${FinalResultDir}
-    exit 1
-  else
-    cp  ./result/*    ${FinalResultDir}
-    exit 0
-  fi
+	if [ ! $# -eq 3 ]
+	then
+		echo "usage: runMain \${TestYUVName}  \${FinalResultDir} \${ConfigureFile} "
+		echo "detected by run_TestYUV.sh"
+		return 1
+	fi
+	local TestYUVName=$1
+	local FinalResultDir=$2
+	local ConfigureFile=$3
+	TestYUVFullPath=""
+	local CurrentDir=`pwd` 
+	local OutPutCaseFile=""
+	ConfigureFile=`echo ${ConfigureFile} | awk 'BEGIN {FS="/"} {print $NF}'`
+	OutPutCaseFile=${TestYUVName}_AllCase.csv
+	echo ""
+	echo  "TestYUVName is ${TestYUVName}" 
+	echo "OutPutCaseFile is  ${OutPutCaseFile}"
+	
+	runYUVResolutionCheck  ${TestYUVName}
+	if [ ! $? -eq 0 ]
+	then
+		echo ""
+		echo  -e "\033[31m YUV resolution is not multiple of 16,it is not supported in WelsRuby local test currently! \033[0m"
+		echo ""
+		exit 1
+	fi	
+	
+	runGetYUVFullPath  ${TestYUVName}  ${ConfigureFile}
+	if [ ! $? -eq 0 ]
+	then
+		echo ""
+		echo  -e "\033[31m  Failed to parse YUV full path info  \033[0m"
+		echo ""
+		exit 1
+	else
+		echo ""
+		echo  -e "\033[32m  TestYUVFullPath is ${TestYUVFullPath}  \033[0m"
+		echo ""
+	fi
+	
+	
+	#Case generation
+	echo ""
+	echo "CurrentDir is ${CurrentDir}"
+	echo "${ConfigureFile}   ${TestYUVName}   ${OutputCaseFile}"
+	./run_GenerateCase.sh  ${ConfigureFile}   ${TestYUVName}   ${OutPutCaseFile}
+	if [  ! $? -eq 0 ]
+	then
+		echo ""
+		echo  -e "\033[31m  failed to generate cases ! \033[0m"
+		echo ""
+		exit 1
+	fi
+	#generate SHA-1 table
+	./run_TestAllCases.sh   ${TestYUVName}  ${TestYUVFullPath}  ${OutPutCaseFile}
+	if [  ! $? -eq 0 ]
+	then
+		cp  ./result/*    ${FinalResultDir}
+		exit 1
+	else
+		cp  ./result/*    ${FinalResultDir}
+		exit 0
+	fi
 }
 TestYUVName=$1
 FinalResultDir=$2
 ConfigureFile=$3
 runMain ${TestYUVName}  ${FinalResultDir}  ${ConfigureFile}
+
 
