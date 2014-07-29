@@ -30,6 +30,13 @@ runGlobalVariableInitial()
 	RecYUVFileLayer2=""
 	RecYUVFileLayer3=""
 	
+	#when resolution is not multiple of 16, need to crop RecYUV
+	RecYUVCropedLayer0=""
+	RecYUVCropedLayer1=""
+	RecYUVCropedLayer2=""
+	RecYUVCropedLayer3=""
+			
+	
 	SHA1String="NULL"
 	MD5String="NULL"
 	BitStreamSize="0"
@@ -45,22 +52,24 @@ runGlobalVariableInitial()
 runEncoderCommandInital()
 {
 	EncoderCommandSet=(-scrsig  -frms  -numl   -numtl \
-					-sh -sw  "-dw 0"  "-dh 0" "-dw 1" "-dh 1" "-dw 2" "-dh 2" "-dw 3" "-dh 3" \
+					-sh -sw  "-sw 0"  "-sh 0" "-sw 1" "-sh 1" "-sw 2" "-sh 2" "-sw 3" "-sh 3" \
 					"-frout 0" "-frout 1" "-frout 2" "-frout 3" \
 					"-lqp 0" "-lqp 1" "-lqp 2" "-lqp 3" \
 					-rc -tarb "-ltarb 0" 	"-ltarb 1" "-ltarb 2" "-ltarb 3" \
 					"-slcmd 0" "-slcnum 0" "-slcmd 1" "-slcnum 1"\
 					"-slcmd 2" "-slcnum 2" "-slcmd 3" "-slcnum 3"\
-					-nalsize -iper   -thread    -ltr \
+					"-slcsize 0"  "-slcsize 1" "-slcsize 2" "-slcsize 3" \
+					-iper   -thread    -ltr \
 					-db  -denois    -scene    -bgd    -aq )
 	EncoderCommandName=(scrsig  frms  numl   numtl \
-					sw sh  dw0 dh0 dw1 dh1 dw2 dh2 dw3 dh3 \
+					sw sh  sw0 sh0 sw1 sh1 sw2 sh2 sw3 sh3 \
 					frout0 frout1 frout2 frout3 \
 					lqp0 lqp1 lqp2 lqp3 \
 					rc tarb ltarb0 	ltarb1 ltarb2 ltarb3 \
 					slcmd0 slcnum0 slcmd1 slcnum1 \
 					slcmd2 slcnum2 slcmd3 slcnum3 \
-					nalsize iper   thread  ltr \
+					slcsz0 slcsz1  slcsz2 slcsz3  \
+					iper   thread  ltr \
 					db  denois  scene  bgd  aq )	
 	NumParameter=${#EncoderCommandSet[@]}
 	for ((i=0;i<NumParameter; i++))
@@ -82,69 +91,87 @@ runParseCaseInfo()
 	local TempData=""
 	local BitstreamPrefix=""
 	local CaseData=$@
-	declare -a aTempParamIndex=( 6 7 8 9 10 11 12 13    15 16 17   19 20 21     24 25 26 27   30 31 32 33 34 35  )
+	declare -a aTempParamIndex=( 6 7 8 9 10 11 12 13    15 16 17   19 20 21     24 25 26 27   30 31 32 33 34 35  37 38 39 )
 	TempData=`echo $CaseData |awk 'BEGIN {FS="[,\r]"} {for(i=1;i<=NF;i++) printf(" %s",$i)} ' `
 	EncoderCommandValue=(${TempData})
 	let "TempParamFlag=0"
 	for((i=0; i<$NumParameter; i++))
 	do
-	for ParnmIndex in ${aTempParamIndex[@]}
-	do
-	  if [  $i -eq ${ParnmIndex} ]
-	  then
-			let "TempParamFlag=1"
-	  fi
-	done
-	if [ ${TempParamFlag} -eq 0 ]
-	then
-		BitstreamPrefix=${BitstreamPrefix}_${EncoderCommandName[$i]}_${EncoderCommandValue[$i]}
-	fi
-	let "TempParamFlag=0"    
+		for ParnmIndex in ${aTempParamIndex[@]}
+		do
+		  if [  $i -eq ${ParnmIndex} ]
+		  then
+				let "TempParamFlag=1"
+		  fi
+		done
+		if [ ${TempParamFlag} -eq 0 ]
+		then
+			BitstreamPrefix=${BitstreamPrefix}_${EncoderCommandName[$i]}_${EncoderCommandValue[$i]}
+		fi
+		let "TempParamFlag=0"    
 	done
 	BitStreamFile=${TempDataPath}/${TestYUVName}_${BitstreamPrefix}_codec_target.264
 	RecYUVFileLayer0=${TempDataPath}/${TestYUVName}_rec0.yuv
 	RecYUVFileLayer1=${TempDataPath}/${TestYUVName}_rec1.yuv
 	RecYUVFileLayer2=${TempDataPath}/${TestYUVName}_rec2.yuv
 	RecYUVFileLayer3=${TempDataPath}/${TestYUVName}_rec3.yuv
+	
+	RecYUVCropedLayer0=${TempDataPath}/${TestYUVName}_rec0_cropped.yuv
+	RecYUVCropedLayer1=${TempDataPath}/${TestYUVName}_rec1_cropped.yuv
+	RecYUVCropedLayer2=${TempDataPath}/${TestYUVName}_rec2_cropped.yuv
+	RecYUVCropedLayer3=${TempDataPath}/${TestYUVName}_rec3_cropped.yuv
 }
 #call by  runAllCaseTest
 #usage  runEncodeOneCase
 runEncodeOneCase()
 {
  
-	local TempCammand=""
-	for ((i=3; i<${NumParameter}; i++))
+	local ParamCommand=""
+	local InputYUVCommand=""
+	local CfgFileCommand=""
+	
+	let "SpatialNum=${EncoderCommandValue[2]}"
+	let "FPS=${EncoderCommandValue[14]}"
+	
+	declare -a aConfigureFile
+	declare -a aLayerInputYUV
+	aConfigureFile=(layer0.cfg layer1.cfg layer2.cfg layer3.cfg  )
+	aLayerInputYUV=(${YUVFileLayer0} ${YUVFileLayer1} ${YUVFileLayer2} ${YUVFileLayer3} )
+	
+	CfgFileCommand="-numl ${SpatialNum}  "
+	for((i=0;i<${SpatialNum};i++))
 	do
-		TempCammand="${TempCammand} ${EncoderCommandSet[$i]}  ${EncoderCommandValue[$i]} " 
+		let "InputIndex=$i + 4 - ${SpatialNum}"
+		CfgFileCommand="${CfgFileCommand} ${aConfigureFile[$i]} "
+		InputYUVCommand="$InputYUVCommand  -org $i ${aLayerInputYUV[$InputIndex]} "
 	done
-	TempCammand="${EncoderCommandSet[0]} ${EncoderCommandValue[0]} \
-				${EncoderCommandSet[1]}  ${EncoderCommandValue[1]} \
-				${EncoderCommandSet[2]}  ${EncoderCommandValue[2]} \
-				-lconfig 0 layer0.cfg \
-				-lconfig 1 layer1.cfg \
-				-lconfig 2 layer2.cfg \
-				-lconfig 3 layer3.cfg \
-				${TempCammand}"
+	
+	for ((i=6; i<${NumParameter}; i++))
+	do
+		ParamCommand="${ParamCommand} ${EncoderCommandSet[$i]}  ${EncoderCommandValue[$i]} " 
+	done
+	
+	
+	ParamCommand="${EncoderCommandSet[0]} ${EncoderCommandValue[0]} ${EncoderCommandSet[1]}  ${EncoderCommandValue[1]} \
+				${EncoderCommandSet[3]}  ${EncoderCommandValue[3]} -frin 0 ${FPS} -frin 1 ${FPS} -frin 2 ${FPS} -frin 3 ${FPS} \
+				${ParamCommand}"
 	echo ""
 	echo "case line is :"
-	EncoderCommand="./h264enc  ${TempCammand}  -bf   ${BitStreamFile}  -org   ${InputYUV} \
-					-drec 0 ${RecYUVFileLayer0} \
-					-drec 1 ${RecYUVFileLayer1} \
-					-drec 2 ${RecYUVFileLayer2} \
-					-drec 3 ${RecYUVFileLayer3}"
+	EncoderCommand="./welsenc.exe  wbxenc.cfg  ${CfgFileCommand}   ${ParamCommand} -bf   ${BitStreamFile} \
+					-drec 0 ${RecYUVFileLayer0} -drec 1 ${RecYUVFileLayer1} \
+					-drec 2 ${RecYUVFileLayer2} -drec 3 ${RecYUVFileLayer3}  ${InputYUVCommand}"
 	echo ${EncoderCommand}
-	./h264enc ${TempCammand}   -bf   ${BitStreamFile} -org  ${InputYUV} \
-		-drec 0 ${RecYUVFileLayer0} \
-		-drec 1 ${RecYUVFileLayer1} \
-		-drec 2 ${RecYUVFileLayer2} \
-		-drec 3 ${RecYUVFileLayer3}>${EncoderLog}
+	./welsenc.exe  wbxenc.cfg  ${CfgFileCommand}   ${ParamCommand} -bf   ${BitStreamFile} \
+				-drec 0 ${RecYUVFileLayer0} -drec 1 ${RecYUVFileLayer1} \
+				-drec 2 ${RecYUVFileLayer2} -drec 3 ${RecYUVFileLayer3}  ${InputYUVCommand}>${EncoderLog}
 		
 	if [ $? -eq 0  ]
 	then
 		let "EncoderFlag=0"
 	else
 		let "EncoderFlag=1"
-	fi 
+	fi
+	
 }
 #usage: runGetFileSize  $FileName
 runGetFileSize()
@@ -165,62 +192,11 @@ runGetFileSize()
 	echo $FileSize
 	
 }
-#usage: runGetEncodedNum  ${EncoderLog}
-runGetEncodedNum()
+runEncodedNumCheck()
 {
-	if [ ! -e $1   ]
-	then
-		echo ""
-		echo "file $1 does not exist!"
-		echo "usage: runGetEncodedNum  \${EncoderLog}"
-		return 1
-	fi
-	local EncoderLog=$1
-	local EncodedNum="0"
-	while read line
-	do
-		if [[  ${line}  =~ ^Frames  ]]
-		then
-			EncodedNum=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-			break
-		fi
-	done <${EncoderLog}
-	
-	echo ${EncodedNum}
-}
-runEncoderBasicCheck()
-{
- if [ !  ${EncoderFlag} -eq 0 ]
-  then
-   
-    return 1
-  fi
-  
-  if [ ${RCMode} -eq -1  ]
-  then
-    if [ -a  ${EncodedNum} -eq -1 ]
-    then
-      if [ ! ${InputYUVSize} -eq ${RecYUVSize} ]
-      then
-        let "EncoderUnPassedNum++"
-        let "DecoderUnCheckNum++"
-        EncoderCheckResult="1:Encoder failed--Encoded number is not equal to setting!"
-        DecoderCheckResult="3:Dec cannot check"
-        return 1
-      fi
-    fi
-    if [ ${EncodedNum} -gt 0  ]
-    then
-      if [ ! ${ActualEncoded} -eq  ${EncodedNum}  ]
-      then
-        let "EncoderUnPassedNum++"
-        let "DecoderUnCheckNum++"
-        EncoderCheckResult="1:Encoder failed,Encoded number is not equal to setting!"
-        DecoderCheckResult="3:Dec cannot check"
-        return 1
-      fi
-    fi
-  fi
+	 
+   run_CheckEncodedNum.sh  $EncoderNum  $SpatailLayerNum $InputYUVSizeLayer0 $InputYUVSizeLayer1 $InputYUVSizeLayer2 $InputYUVSizeLayer3\
+                            $RecYUVFileLayer0 $RecYUVFileLayer1 $RecYUVFileLayer2 $RecYUVFileLayer3 $EncoderLog 
 }
 runOutputCheckLog()
 {

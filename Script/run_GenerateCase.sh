@@ -277,12 +277,12 @@ runParseCaseConfigure()
 	
 	
 }
-#usage: runGetSliceNume  $SliceMd
-runGetSliceNume()
+#usage: runGetSliceNum  $SliceMd
+runGetSliceNum()
 {
 	if [ ! $# -eq 1  ]
 	then
-		echo "usage: runGetSliceNume  \$SliceMd"
+		echo "usage: runGetSliceNum  \$SliceMd"
 		return 1
 	fi
 	local SlicMdIndex=$1
@@ -317,7 +317,7 @@ runFirstStageCase()
 			do
 				for RCModeIndex in ${aRCMode[@]}
 				do			  
-					if [[  "$aRCModeIndex" =~  "-1"  ]]
+					if [[  "$aRCModeIndex" =~  "0"  ]]
 					then
 						aQPforTest=${aInitialQP[@]}
 						aTargetBitrateSet=("256,256,256,256,")
@@ -355,14 +355,14 @@ runSecondStageCase()
 	#for slice number based on different aSliceMode
 	declare -a aSliceNumber
 	declare -a ThreadNumber
-	local MaxNalSize="1500"
+	local TempNalSize=""
 	while read FirstStageCase
 	do
 		if  [[ $FirstStageCase =~ ^[-0-9]  ]]
 		then
 			for SlcMode in ${aSliceMode[@]}
 			do
-				aSliceNumber=( `runGetSliceNume  $SlcMode ` )
+				aSliceNumber=( `runGetSliceNum  $SlcMode ` )
 				#for slice number based on different thread number
 				if [ $SlcMode -eq 0  ]
 				then
@@ -373,9 +373,9 @@ runSecondStageCase()
 				
 				if [  $SlcMode -eq 4  ]
 				then
-					let "MaxNalSize= ${MaxNalSize}"
+					let "TempNalSize=${MaxNalSize}"
 				else
-					let "MaxNalSize= 0"
+					let "TempNalSize= 0"
 				fi	
 				
 				for SlcNum in ${aSliceNumber[@]}
@@ -391,7 +391,8 @@ runSecondStageCase()
 								1,1,\
 								1,1,\
 								1,1,\
-								${MaxNalSize},\
+								${TempNalSize}, ${TempNalSize},\
+								${TempNalSize}, ${TempNalSize},\
 								$IntraPeriodIndex,\
 								$ThreadNum">>$casefile_02							
 							else
@@ -400,7 +401,8 @@ runSecondStageCase()
 								${SlcMode}, ${SlcNum},\
 								${SlcMode}, ${SlcNum},\
 								${SlcMode}, ${SlcNum},\
-								${MaxNalSize},       \
+								${TempNalSize}, ${TempNalSize},\
+								${TempNalSize}, ${TempNalSize},\
 								${IntraPeriodIndex},\
 								${ThreadNum}">>$casefile_02
 							fi
@@ -530,7 +532,10 @@ runBeforeGenerate()
 		SliceNmuLayer2,\
 		SliceMdLayer3, \
 		SliceNmuLayer3,\
-		MaxNalSize,\
+		MaxSlcSize0,\
+		MaxSlcSize1,\
+		MaxSlcSize2,\
+		MaxSlcSize3,\
 		IntraPeriod,\
 		MultipleThreadIdc,\
 		EnableLongTermReference,\
@@ -580,4 +585,5 @@ OutputCaseFile=$3
 echo ""
 echo "case generating ......"
 runMain  ${ConfigureFile}   ${TestSequence}   ${OutputCaseFile} 
+
 

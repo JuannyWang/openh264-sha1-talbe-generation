@@ -41,23 +41,23 @@ runGlobalVariableInitial()
 	CaseSummaryFile="${FinalResultPath}/${TestYUVName}.Summary"
 	echo  "EncoderFlag,DecoderFlag,SHA-1, MD5, BitStreamSize, YUVSize,\
 			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
-			-dw 0, -dh 0, -dw 1, -dh 1,-dw 2, -dh 2, -dw 3, -dh 3,\
+			-sw 0, -sh 0, -sw 1, -sh 1,-sw 2, -sh 2, -sw 3, -sh 3,\
 			-frout 0,  -frout 1, -frout 2, -frout 3,\
 			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
 			-rc,-tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
 			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
 			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
-			-nalsize, -iper, -thread, -ltr, -db, -denois,\
+			-slicesize, -iper, -thread, -ltr, -db, -denois,\
 			-scene    -bgd    -aq ">${AllCasePassStatusFile}
 	echo  "SHA-1 Value, MD5String, BitStreamSize, YUVSize, \
 			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
-			-dw 0, -dh 0, -dw 1, -dh 1,-dw 2, -dh 2, -dw 3, -dh 3,\
+			-sw 0, -sh 0, -sw 1, -sh 1,-sw 2, -sh 2, -sw 3, -sh 3,\
 			-frout 0,  -frout 1, -frout 2, -frout 3,\
 			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
 			-rc,-tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
 			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
 			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
-			-nalsize, -iper, -thread, -ltr, -db, -denois,\
+			-slicesize, -iper, -thread, -ltr, -db, -denois,\
 			-scene    -bgd    -aq ">${AllCaseSHATableFile}
 	
 	let "YUVSizeLayer0=0"
@@ -77,9 +77,9 @@ runGlobalVariableInitial()
 	let "DecoderUpPassedNum=0"
 	let "DecoderUnCheckNum=0"
 }
-runPrepareMultiLayerInfo()
+runPrepareMultiLayerInputYUV()
 {
-	local PrepareLog="MultiLayerInputYUVPrepare.log"
+	local PrepareLog="${TestYUVName}_MultiLayerInputYUVPrepare.log"
 	declare -a aYUVInfo
 	
 	aYUVInfo=(`./run_ParseYUVInfo.sh  ${TestYUVName}`)
@@ -87,7 +87,7 @@ runPrepareMultiLayerInfo()
 	PicH=${aYUVInfo[1]}
 	#generate input YUV file for each layer
 	MaxSpatialLayerNum=`./run_GetSpatialLayerNum.sh ${PicW} ${PicH}`
-	./run_PrepareMultiLayerInputYUV.sh ${InputYUV} ${MaxSpatialLayerNum} ${PrepareLog}
+	#./run_PrepareMultiLayerInputYUV.sh ${InputYUV} ${MaxSpatialLayerNum} ${PrepareLog}
 	
 	if [ ! $? -eq 0 ]
 	then
@@ -273,7 +273,7 @@ runMain()
 	InputYUV=$2
 	AllCaseFile=$3
 	runGlobalVariableInitial
-	runPrepareMultiLayerInfo
+	runPrepareMultiLayerInputYUV
 	
 	runAllCaseTest #>${AllCaseConsoleLogFile}
 	runOutputPassNum
