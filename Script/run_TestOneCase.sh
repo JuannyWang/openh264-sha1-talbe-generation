@@ -300,8 +300,19 @@ runOutputCaseInfo()
 }
 runBasicCheck()
 {
+	echo ""
+	echo "basic check:"
+	echo " ${EncoderFlag}  ${EncoderLog} ${EncoderNum}  ${SpatailLayerNum} ${RCMode} ${CheckLogFile} \
+			${aInputYUVSizeLayer[@]} ${aRecYUVFileList[@]} ${aRecCropYUVFileList[@]}  ${aEncodedPicW[@]} ${aEncodedPicH[@]}	"
+	echo ""
 	./run_CheckBasicCheck.sh  ${EncoderFlag}  ${EncoderLog} ${EncoderNum}  ${SpatailLayerNum} ${RCMode} ${CheckLogFile} \
 							${aInputYUVSizeLayer[@]} ${aRecYUVFileList[@]} ${aRecCropYUVFileList[@]}  ${aEncodedPicW[@]} ${aEncodedPicH[@]}		
+	return $?
+}
+runJSVMCheck()
+{
+	
+	./run_CheckByJSVMDecoder.sh ${CheckLogFile} ${TempDataPath}  ${InputYUV} ${BitStreamFile}  ${SpatailLayerNum}  ${aRecYUVFileList[@]}
 	return $?
 }
 # usage: runMain $TestYUV  $InputYUV $AllCaseFile
@@ -323,23 +334,23 @@ runMain()
 	
 	runEncodeOneCase
 	
-	
-	echo ""
-	echo "basic check:"
-	echo " ${EncoderFlag}  ${EncoderLog} ${EncoderNum}  ${SpatailLayerNum} ${RCMode} ${CheckLogFile} \
-			${aInputYUVSizeLayer[@]} ${aRecYUVFileList[@]} ${aRecCropYUVFileList[@]}  ${aEncodedPicW[@]} ${aEncodedPicH[@]}	"
-	echo ""
 	runBasicCheck
 	if [ ! $? -eq 0  ]
 	then
 		echo  -e "\033[31m  case failed! \033[0m"
+		runParsetCaseCheckLog ${CheckLogFile}
 		exit 1
 	fi
 	
-	echo "basic check end!"
-	echo ""
+	runJSVMCheck
+	if [ ! $? -eq 0  ]
+	then
+		echo  -e "\033[31m  case failed! \033[0m"
+		runParsetCaseCheckLog ${CheckLogFile}
+		exit 1
+	fi
 	
-	runParsetCaseCheckLog ${CheckLogFile}
+	
 }
 #call main function
 CaseInfo=$@
