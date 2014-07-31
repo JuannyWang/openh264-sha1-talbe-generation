@@ -1,5 +1,16 @@
 #!/bin/bash
 
+#************************************************************************************************
+#
+# Usage:   run_CheckEncodedNum.sh  $EncoderNum  $SpatailLayerNum \
+#                                  ${EncoderLog}  ${aInputLayerYUVSize} $aRecYUVFile
+#
+# e.g:    --run_CheckEncodedNum.sh  32  3  Encoder.log  400 800  1600  0 \
+#                                          320X180.yuv 640X360.yuv 1280X720.yuv NuLL.yuv
+#         --run_CheckEncodedNum.sh  32  2  Encoder.log   800  1600 0 0 \
+#                                          640X360.yuv 1280X720.yuv  NuLL01.yuv NULL02.yuv
+#
+#************************************************************************************************
 
 #usage: runGetFileSize  $FileName
 runGetFileSize()
@@ -33,6 +44,8 @@ runCheckActulLayerSize()
 	
 	local ActualSpatialNum=$1
 	
+	aRecYUVLayerSize=(0 0 0 0)
+	let "SizeMatchFlag=0"
 	for((i=0;i<${ActualSpatialNum};i++))
 	do
 		if [ -e ${aRecYUVFile[$i]} ]
@@ -40,26 +53,18 @@ runCheckActulLayerSize()
 			aRecYUVLayerSize[$i]=`runGetFileSize  ${aRecYUVFile[$i]}`
 			echo "${aRecYUVFile[$i]} size: ${aRecYUVLayerSize[$i]}"
 		fi
-	done
-	
-	let "LowestLayerIndex=4 - ${ActualSpatialNum} "
-	let "SizeMatchFlag=0"
-	
-	echo "RecYUV   size: ${aRecYUVLayerSize[@]}"
-	echo "InputYUV size: ${aInputLayerYUVSize[@]}"
-	echo ""
-	
-	for((i=0;i<${ActualSpatialNum};i++))
-	do
-		let "RefSizeIndex=$i + ${LowestLayerIndex}"
-		echo ""
-		echo "Rec--Input:  ${aRecYUVLayerSize[$i]} ---- ${aInputLayerYUVSize[${RefSizeIndex}]}"
-		if [ ! ${aRecYUVLayerSize[$i]} -eq ${aInputLayerYUVSize[${RefSizeIndex}]}  ]
+		
+		echo "Rec--Input:  ${aRecYUVLayerSize[$i]} ---- ${aInputLayerYUVSize[$i]}"
+		if [ ! ${aRecYUVLayerSize[$i]} -eq ${aInputLayerYUVSize[$i]}  ]
 		then
 			let "SizeMatchFlag=1"
 		fi
 	done
-	
+		
+	echo "RecYUV   size: ${aRecYUVLayerSize[@]}"
+	echo "InputYUV size: ${aInputLayerYUVSize[@]}"
+	echo ""
+		
 	if [ ! ${SizeMatchFlag} -eq 0 ]
 	then
 		echo ""
@@ -87,7 +92,7 @@ runGetEncodedNum()
 	local EncodedNum="0"
 	while read line
 	do
-		if [[  ${line}  =~ ^Frames  ]]
+		if [[  ${line}  =~ ^Number  ]]
 		then
 			EncodedNum=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
 			break
@@ -127,15 +132,13 @@ runCheckActualEncodedNum()
 	fi
 }
 
-
-
 runMain()
 {
 
 	if [ ! $# -eq 11  ]
 	then
 		echo	""
-		echo  -e "\033[31m Usage: run_CheckEncodedNum.sh  \$EncoderNum  \$SpatailLayerNum \${EncoderLog} ${aInputLayerYUVSize} \$aRecYUVFile \033[0m"
+		echo  -e "\033[31m Usage: run_CheckEncodedNum.sh  \${EncoderNum} \${SpatailLayerNum} \${EncoderLog} \${aInputLayerYUVSize[@]} \${aRecYUVFile[@]}\033[0m"
 		echo ""
 		exit 1
 	fi
@@ -158,8 +161,6 @@ runMain()
 		aInputLayerYUVSize[$i]=${aParameterSet[${YUVSizeIndex}]}
 		aRecYUVFile[$i]=${aParameterSet[${RecYUVFileIndex}]}
 	done
-	
-	aRecYUVLayerSize=(0 0 0 0)
 	
 	if [ ${SpatailLayerNum} -lt 1 -o ${SpatailLayerNum} -gt 4 ]
 	then

@@ -96,8 +96,8 @@ runMain()
 	
 	if [ ! -e ${InputYUV}  -o ! -s ${InputYUV} ]
 	then
-		echo ""
-		echo "input yuv file does not exist or the size is 0 bit!"
+		echo ""	
+		echo -e "\033[31m   input yuv file ${InputYUV} does not exist or the size is 0 bit! \033[0m"
 		echo ""
 		exit 2
 	fi
@@ -105,7 +105,7 @@ runMain()
 	if [ ${EncodedWidth} -lt 4  -o  ${EncodedHeight} -lt 4  ]
 	then
 		echo ""
-		echo "encoded width or encoded height is not correct, the value should be PicWXPicH>=4X4"
+		echo -e "\033[31m   encoded width or encoded height is not correct, the value should be PicWXPicH>=4X4 \033[0m"
 		echo ""
 		exit 2
 	fi
@@ -141,6 +141,5 @@ OutputYUV=$2
 EncodedWidth=$3
 EncodedHeight=$4
 runMain  ${InputYUV} ${OutputYUV} ${EncodedWidth} ${EncodedHeight}
-
 
 

@@ -87,7 +87,7 @@ runPrepareMultiLayerInputYUV()
 	PicH=${aYUVInfo[1]}
 	#generate input YUV file for each layer
 	MaxSpatialLayerNum=`./run_GetSpatialLayerNum.sh ${PicW} ${PicH}`
-	#./run_PrepareMultiLayerInputYUV.sh ${InputYUV} ${MaxSpatialLayerNum} ${PrepareLog}
+	./run_PrepareMultiLayerInputYUV.sh ${InputYUV} ${MaxSpatialLayerNum} ${PrepareLog}
 	
 	if [ ! $? -eq 0 ]
 	then
@@ -187,8 +187,8 @@ runParseCaseCheckLog()
 #usage  runAllCaseTest
 runAllCaseTest()
 {
-	local CheckLogFile="CaseCheck.log"
-	local EncoderLog="encoder.log"
+	local CheckLogFile="${TempDataPath}/CaseCheck.log"
+	local EncoderLog="${TempDataPath}/encoder.log"
 	
 	while read CaseData
 	do
@@ -216,10 +216,15 @@ runAllCaseTest()
 			export YUVFileLayer3
 			
 			./run_TestOneCase.sh  ${CaseData}
-			runParseCaseCheckLog ${CheckLogFile}
+			runParseCaseCheckLog  ${CheckLogFile}
 			
 			cat ${EncoderLog}
             cat ${CheckLogFile}
+			for file in  ${TempDataPath}/*
+			do
+				./run_SafeDelete.sh  ${file}>>DeletedFile.list
+			done 
+					
 			let "TotalCaseNum++"
 		fi
 	done <$AllCaseFile
