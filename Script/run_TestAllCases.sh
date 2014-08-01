@@ -18,7 +18,7 @@
 #       --output info can be found  in ../AllTestData/${TestSetIndex}/result/
 #            pass case number, unpass case number total case number
 #            ${TestSetIndex}_${TestYUVName}_AllCaseOutput.csv
-#            ${AllCaseConsoleLogFile}
+#            ${AllCasesConsoleLogFile}
 #            ${CaseSummaryFile}
 #
 #date:  10/06/2014 Created
@@ -27,39 +27,46 @@ runGlobalVariableInitial()
 {
 	CurrentDir=`pwd`
 	#test data space
-	FinalResultPath="result"
+	ResultPath="result"
 	IssueDataPath="issue"
 	TempDataPath="TempData"
-	mkdir -p ${FinalResultPath}
+	mkdir -p ${ResultPath}
 	mkdir -p ${IssueDataPath}
 	mkdir -p ${TempDataPath}
 	#test cfg file and test info output file
-	ConfigureFile=welsenc.cfg
-	AllCasePassStatusFile="${FinalResultPath}/${TestYUVName}_AllCaseOutput.csv"
-	AllCaseSHATableFile="${FinalResultPath}/${TestYUVName}_AllCase_SHA1_Table.csv"
-	AllCaseConsoleLogFile="${FinalResultPath}/${TestYUVName}.TestLog"
-	CaseSummaryFile="${FinalResultPath}/${TestYUVName}.Summary"
-	echo  "EncoderFlag,DecoderFlag,SHA-1, MD5, BitStreamSize, YUVSize,\
+	AllCasesPassStatusFile="${ResultPath}/${TestYUVName}_AllCasesOutput.csv"
+	UnPassedCasesFile="${ResultPath}/${TestYUVName}_UnpassedCasesOutput.csv"	
+	AllCasesSHATableFile="${ResultPath}/${TestYUVName}_AllCases_SHA1_Table.csv"
+	AllCasesConsoleLogFile="${ResultPath}/${TestYUVName}.TestLog"
+	CaseSummaryFile="${ResultPath}/${TestYUVName}.Summary"
+	HeadLine1="EncoderFlag,DecoderFlag,BitSreamSHA1, BitSreamMD5, InputYUVSHA1, InputYUVMD5,\
 			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
-			-sw 0, -sh 0, -sw 1, -sh 1,-sw 2, -sh 2, -sw 3, -sh 3,\
+			-sw 0, -sh 0, -sw 1, -sh 1, -sw 2, -sh 2, -sw 3, -sh 3,\
 			-frout 0,  -frout 1, -frout 2, -frout 3,\
 			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
-			-rc,-tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
+			-rc, -tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
 			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
 			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
-			-slicesize, -iper, -thread, -ltr, -db, -denois,\
-			-scene    -bgd    -aq ">${AllCasePassStatusFile}
-	echo  "SHA-1 Value, MD5String, BitStreamSize, YUVSize, \
-			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
-			-sw 0, -sh 0, -sw 1, -sh 1,-sw 2, -sh 2, -sw 3, -sh 3,\
-			-frout 0,  -frout 1, -frout 2, -frout 3,\
-			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
-			-rc,-tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
-			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
-			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
-			-slicesize, -iper, -thread, -ltr, -db, -denois,\
-			-scene    -bgd    -aq ">${AllCaseSHATableFile}
+			-slicesize 0, -slicesize 1, -slicesize 2, -slicesize 3,\
+			-iper, -thread, -ltr, -db, -denois,\
+			-scene,  -bgd ,  -aq, "
 	
+	HeadLine2="BitSreamSHA1, BitSreamMD5, InputYUVSHA1, InputYUVMD5,\
+			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
+			-sw 0, -sh 0, -sw 1, -sh 1,-sw 2, -sh 2, -sw 3, -sh 3,\
+			-frout 0,  -frout 1, -frout 2, -frout 3,\
+			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
+			-rc, -tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
+			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
+			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
+			-slicesize 0, -slicesize 1, -slicesize 2, -slicesize 3,\
+			-iper, -thread, -ltr, -db, -denois,\
+			-scene  , bgd  , -aq "
+			
+	echo  ${HeadLine1}>${AllCasesPassStatusFile}
+	echo  ${HeadLine1}>${UnPassedCasesFile}
+	
+	echo  ${HeadLine2}>${AllCasesSHATableFile}
 	let "YUVSizeLayer0=0"
 	let "YUVSizeLayer1=0"
 	let "YUVSizeLayer2=0"
@@ -158,27 +165,22 @@ runParseCaseCheckLog()
 		if [[  "$line" =~ ^EncoderPassedNum  ]]
 		then
 			Flag=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-			echo $Flag
 			let "EncoderPassedNum +=${Flag}"
 		elif [[ "$line" =~ ^EncoderUnPassedNum ]]
 		then
 			Flag=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-			echo $Flag
 			let "EncoderUnPassedNum +=${Flag}"
 		elif [[ "$line" =~ ^DecoderPassedNum ]]
 		then
 			Flag=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-			echo $Flag
 			let "DecoderPassedNum +=${Flag}"
 		elif [[ "$line" =~ ^DecoderUpPassedNum ]]
 		then
 			Flag=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-			echo $Flag
 			let "DecoderUpPassedNum +=${Flag}"
 		elif [[ "$line" =~ ^DecoderUnCheckNum ]]
 		then
 			Flag=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-			echo $Flag
 			let "DecoderUnCheckNum +=${Flag}"
 		fi
 	done <${CheckLog}
@@ -188,22 +190,23 @@ runParseCaseCheckLog()
 runAllCaseTest()
 {
 	local CheckLogFile="${TempDataPath}/CaseCheck.log"
-	local EncoderLog="${TempDataPath}/encoder.log"
-	
+	let "TotalCaseNum=0"
+	let "LineIndex=0"
 	while read CaseData
 	do
-		if [[ $CaseData =~ ^[-0-9]  ]]
+		if [ ${LineIndex} -gt 0  ]
 		then
 			echo ""
 			echo ""
 			echo ""
-			echo "********************case index is ${TotalCaseNum}**************************************"
+			echo "********************case index is ${TotalCaseNum}**************************************"		
 			export IssueDataPath
 			export TempDataPath
 			export TestYUVName
 			export InputYUV
-			export AllCasePassStatusFile
-			export AllCaseSHATableFile
+			export AllCasesPassStatusFile
+			export UnPassedCasesFile
+			export AllCasesSHATableFile
 			export EncoderLog
 			export CheckLogFile
 			export YUVSizeLayer0
@@ -216,17 +219,20 @@ runAllCaseTest()
 			export YUVFileLayer3
 			
 			./run_TestOneCase.sh  ${CaseData}
-			runParseCaseCheckLog  ${CheckLogFile}
 			
-			cat ${EncoderLog}
+			runParseCaseCheckLog  ${CheckLogFile}
+			echo ""
+			echo "---------------Cat Check Log file--------------------------------------------"
             cat ${CheckLogFile}
 			for file in  ${TempDataPath}/*
 			do
 				./run_SafeDelete.sh  ${file}>>DeletedFile.list
 			done 
 					
-			let "TotalCaseNum++"
+			let "TotalCaseNum++"	
 		fi
+		
+		let "LineIndex++"
 	done <$AllCaseFile
 }
 #usage runOutputPassNum
@@ -238,29 +244,30 @@ runOutputPassNum()
 	echo  -e "\033[32m *********************************************************** \033[0m"
 	echo  -e "\033[32m total case  Num     is : ${TotalCaseNum}\033[0m"
 	echo  -e "\033[32m EncoderPassedNum    is : ${EncoderPassedNum}\033[0m"
-	echo  -e "\033[31m EncoderUnPassedNum  is : ${EncoderUnPassedNum} \033[0m"
+	echo  -e "\033[31m EncoderUnPassedNum  is : ${EncoderUnPassedNum}\033[0m"
 	echo  -e "\033[32m DecoderPassedNum    is : ${DecoderPassedNum}\033[0m"
 	echo  -e "\033[31m DecoderUpPassedNum  is : ${DecoderUpPassedNum}\033[0m"
 	echo  -e "\033[31m DecoderUnCheckNum   is : ${DecoderUnCheckNum}\033[0m"
 	echo "issue bitstream can be found in .../AllTestData/${TestFolder}/issue"
-	echo "detail result  can be found in .../AllTestData/${TestFolder}/result"
+	echo "detail result  can be found in .../AllTestData/${TestFolder}/${ResultPath}"
 	echo  -e "\033[32m *********************************************************** \033[0m"
 	echo ""
-	echo "${TestSetIndex}_${TestYUVName}">${CaseSummaryFile}
-	echo "total case  Num     , ${TotalCaseNum}" >>${CaseSummaryFile}
-	echo "EncoderPassedNum    , ${EncoderPassedNum}" >>${CaseSummaryFile}
-	echo "EncoderUnPassedNum  , ${EncoderUnPassedNum} " >>${CaseSummaryFile}
-	echo "DecoderPassedNum    , ${DecoderPassedNum}" >>${CaseSummaryFile}
-	echo "DecoderUpPassedNum  , ${DecoderUpPassedNum}" >>${CaseSummaryFile}
-	echo "DecoderUnCheckNum   , ${DecoderUnCheckNum}" >>${CaseSummaryFile}
-	echo "  detail file located in ../AllTestData/${TestSetIndex}/result" >>${CaseSummaryFile}
+	echo "...............Test summary for ${TestYUVName}...........................">${CaseSummaryFile}
+	echo "  total case  Num     ,  ${TotalCaseNum}" >>${CaseSummaryFile}
+	echo "  EncoderPassedNum    ,  ${EncoderPassedNum}" >>${CaseSummaryFile}
+	echo "  EncoderUnPassedNum  ,  ${EncoderUnPassedNum} " >>${CaseSummaryFile}
+	echo "  DecoderPassedNum    ,  ${DecoderPassedNum}" >>${CaseSummaryFile}
+	echo "  DecoderUpPassedNum  ,  ${DecoderUpPassedNum}" >>${CaseSummaryFile}
+	echo "  DecoderUnCheckNum   ,  ${DecoderUnCheckNum}" >>${CaseSummaryFile}
+	echo "  detail files can be found  in ../AllTestData/${TestFolder}/${ResultPath}" >>${CaseSummaryFile}
+	echo "..........................................................................">>${CaseSummaryFile}
 	echo  -e "\033[32m *********************************************************** \033[0m"
 	
 	if [  ! ${EncoderUnPassedNum} -eq 0  ]
 	then
-		FlagFile="./result/${TestSetIndex}_${TestYUVName}.unpassFlag"
+		FlagFile="${ResultPath}/${TestYUVName}.unpassFlag"
 	else
-		FlagFile="./result/${TestSetIndex}_${TestYUVName}.passFlag"
+		FlagFile="${ResultPath}/${TestYUVName}.passFlag"
 	fi
 	touch ${FlagFile}
 }
@@ -280,7 +287,7 @@ runMain()
 	runGlobalVariableInitial
 	runPrepareMultiLayerInputYUV
 	
-	runAllCaseTest #>${AllCaseConsoleLogFile}
+	runAllCaseTest >${AllCasesConsoleLogFile}
 	runOutputPassNum
 }
 TestYUVName=$1

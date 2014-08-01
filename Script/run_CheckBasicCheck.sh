@@ -14,44 +14,26 @@
 
 runOutputFailedCheckLog()
 {
-
 	echo  "EncoderPassedNum:   0"
 	echo  "EncoderUnPassedNum: 1"
 	echo  "DecoderPassedNum:   0"
 	echo  "DecoderUpPassedNum: 0"
 	echo  "DecoderUnCheckNum:  1"
 	
-	echo "SHA1String: NULL"
-	echo "MD5String:  NULL"
-	echo "BitStreamSize: NULL"
-	echo "YUVSize:       NULL"
+	echo "BitStreamSHA1String: NULL"
+	echo "BitStreamMD5String:  NULL"
+	echo "InputYUVSHA1String:  NULL"
+	echo "InputYUVMD5String:   NULL"
 	echo "EncoderCheckResult: ${EncoderCheckResult}"
 	echo "DecoderCheckResult: ${DecoderCheckResult}"
-}
-
-runOutputPassedCheckLog()
-{
-
-	echo  "EncoderPassedNum:   1"
-	echo  "EncoderUnPassedNum: 0"
-	echo  "DecoderPassedNum:   0"
-	echo  "DecoderUpPassedNum: 0"
-	echo  "DecoderUnCheckNum:  1"
-	
-	echo "SHA1String: NULL"
-	echo "MD5String:  NULL"
-	echo "BitStreamSize: NULL"
-	echo "YUVSize:       NULL"
-	echo "EncoderCheckResult: Basic Passed!"
-	echo "DecoderCheckResult: not checked yet!"
 }
 
 runEncoderFailedCheck()
 {
 	if [ ! ${EncoderFlag} -eq 0 ]
 	then
-		EncoderCheckResult="1:Encoder failed!"
-		DecoderCheckResult="3:Decoder cannot be checked!" 
+		EncoderCheckResult="1-Encoder failed!"
+		DecoderCheckResult="3-Decoder cannot be checked!" 
 		runOutputFailedCheckLog>${CheckLog}
 		return 1
 	fi	
@@ -72,8 +54,8 @@ runRecYUVCheck()
 
 	if [ ! ${RecFlag} -eq 0  ]
 	then
-		EncoderCheckResult="1:Encoder failed!--RecYUV does not exist"
-		DecoderCheckResult="3:Decoder cannot be checked!" 
+		EncoderCheckResult="1-Encoder failed!--RecYUV does not exist"
+		DecoderCheckResult="3-Decoder cannot be checked!" 
 		runOutputFailedCheckLog>${CheckLog}
 		return 1		
 	fi	
@@ -90,8 +72,8 @@ runEncodedNumCheck()
 		
 		if [ ! $? -eq 0 ]
 		then
-			EncoderCheckResult="1:Encoder failed!"
-			DecoderCheckResult="3:Decoder cannot be checked!" 
+			EncoderCheckResult="1-Encoder failed!"
+			DecoderCheckResult="3-Decoder cannot be checked!" 
 			runOutputFailedCheckLog >${CheckLog}
 			return 1
 		fi			
@@ -124,8 +106,8 @@ runCropRecYUV()
 	
 	if [ !  ${CropFlag} -eq 0 ]
 	then
-		EncoderCheckResult="1:Encoder RecYUV file cropped failed!"
-		DecoderCheckResult="3:Decoder cannot be checked!" 
+		EncoderCheckResult="1-Encoder RecYUV file cropped failed!"
+		DecoderCheckResult="3-Decoder cannot be checked!" 
 		runOutputFailedCheckLog >${CheckLog}
 		return 1
 	fi
@@ -194,25 +176,23 @@ runMain()
 	EncoderCheckResult="NULL"
 	DecoderCheckResult="NULL"
 	
+	echo "---------------Basic Check--------------------------------------------"
+	echo "-------------------1. Basic Check--Encoded Failed Check"
 	runEncoderFailedCheck
 	if [ ! $? -eq 0 ]
 	then
 		echo -e "\033[31m  encode failed! \033[0m"
 		return 1
 	fi
-	
-	echo ""
-	echo "TemYUV Dir Info:"
-	ls -l TempData/*
-	echo ""
-	
+	echo "-------------------2. Basic Check--RecYUV Check"
 	runRecYUVCheck
 	if [ ! $? -eq 0 ]
 	then
 		echo -e "\033[31m RecYUV does not exist! \033[0m"
 		return 1
-	fi	
+	fi
 	
+	echo "-------------------3. Basic Check--Crop RecYUV for JSVM comparison"
 	runCropRecYUV
 	if [ ! $? -eq 0 ]
 	then
@@ -220,15 +200,20 @@ runMain()
 		return 1
 	fi	
 	
+	echo "-------------------4. Basic Check--Encoded Number Check"
 	runEncodedNumCheck		
 	if [ ! $? -eq 0 ]
 	then
 		echo -e "\033[31m  encoded number not equal to setting  \033[0m"
 		return 1
 	fi			
-
+	
+	echo ""
 	echo -e "\033[32m  basic check passed!  \033[0m"
-	runOutputPassedCheckLog >${CheckLog}
+	echo -e "\033[32m    1.encoded failed check passed!   \033[0m"
+	echo -e "\033[32m    2.cropped YUV check passed!      \033[0m"
+	echo -e "\033[32m    3.encoded number check  passed!  \033[0m"
+	echo ""
 	return 0
 
 }

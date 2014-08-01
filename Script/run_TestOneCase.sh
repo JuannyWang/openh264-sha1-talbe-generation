@@ -32,25 +32,17 @@ runGlobalVariableInitial()
 	
 	BitstreamPrefix=""
 	BitStreamFile=""
-	RecYUVFileLayer0=""
-	RecYUVFileLayer1=""
-	RecYUVFileLayer2=""
-	RecYUVFileLayer3=""
 	
-	#when resolution is not multiple of 16, need to crop RecYUV
-	RecYUVCropedLayer0=""
-	RecYUVCropedLayer1=""
-	RecYUVCropedLayer2=""
-	RecYUVCropedLayer3=""
-			
+	EncoderLog="${TempDataPath}/encoder.log"
+				
 	let "EncoderNum=-1"
 	let "SpatailLayerNum=1" 
 	let "RCMode=0" 
 	  
-	SHA1String="NULL"
-	MD5String="NULL"
-	BitStreamSize="0"
-	YUVSize=""
+	BitStreamSHA1String="NULL"
+	BitStreamMD5String="NULL"
+	InputYUVSHA1String="NULL"
+	InputYUVMD5String="NULL"
 	EncoderCheckResult="NULL"
 	DecoderCheckResult="NULL"
 	EncoderCommand="NULL"
@@ -181,6 +173,7 @@ runEncodeOneCase()
 				${aEncoderCommandSet[3]}  ${aEncoderCommandValue[3]} -frin 0 ${FPS} -frin 1 ${FPS} -frin 2 ${FPS} -frin 3 ${FPS} \
 				${ParamCommand}"
 	echo ""
+	echo "---------------Encode One Case-------------------------------------------"
 	echo "case line is :"
 	EncoderCommand="./welsenc.exe  wbxenc.cfg  ${CfgFileCommand}   ${ParamCommand} -bf   ${BitStreamFile} \
 				-drec 0 ${aRecYUVFileList[0]} -drec 1 ${aRecYUVFileList[1]} \
@@ -217,21 +210,6 @@ runGetFileSize()
 	echo $FileSize
 	
 }
-runOutputCheckLog()
-{
-	echo  "EncoderPassedNum: 1"
-	echo  "EncoderUnPassedNum: 0"
-	echo  "DecoderPassedNum: 0"
-	echo  "DecoderUpPassedNum: 0"
-	echo  "DecoderUnCheckNum: 1"
-	
-	echo "SHA1String: 123456"
-	echo "MD5String:  123456"
-	echo "BitStreamSize: 1024"
-	echo "YUVSize:       1024"
-	echo "EncoderCheckResult: Passed"
-	echo "DecoderCheckResult: Unchecked"
-}
 #usage runParsetCaseCheckLog  ${CheckLog}
 runParsetCaseCheckLog()
 {
@@ -254,22 +232,30 @@ runParsetCaseCheckLog()
 		elif [[ "$line" =~ ^DecoderCheckResult ]]
 		then
 			DecoderCheckResult=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-		elif [[ "$line" =~ ^SHA1String ]]
+		elif [[ "$line" =~ ^BitStreamSHA1String ]]
 		then
-			SHA1String=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-		elif [[ "$line" =~ ^MD5String ]]
+			BitStreamSHA1String=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif [[ "$line" =~ ^BitStreamMD5String ]]
 		then
-			MD5String=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-		elif [[ "$line" =~ ^BitStreamSize ]]
+			BitStreamMD5String=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif [[ "$line" =~ ^InputYUVSHA1String ]]
 		then
-			BitStreamSize=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
-		elif [[ "$line" =~ ^YUVSize ]]
+			InputYUVSHA1String=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+		elif [[ "$line" =~ ^InputYUVMD5String ]]
 		then
-			YUVSize=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
+			InputYUVMD5String=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
 		fi
 	done <${CheckLog} 
-	 echo " ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${CaseInfo}">>${AllCaseSHATableFile}
-	 echo " ${EncoderCheckResult},${DecoderCheckResult}, ${SHA1String}, ${MD5String}, ${BitStreamSize},${YUVSize}, ${TestCaseInfo}, ${EncoderCommand} ">>${AllCasePassStatusFile}
+}
+runOutputCaseCheckStatus()
+{	
+	 echo " ${BitStreamSHA1String}, ${BitStreamMD5String}, ${InputYUVSHA1String},${InputYUVMD5String}, ${CaseInfo}">>${AllCasesSHATableFile}
+	 echo " ${EncoderCheckResult},${DecoderCheckResult}, ${BitStreamSHA1String}, ${BitStreamMD5String}, ${InputYUVSHA1String},${InputYUVMD5String}, ${TestCaseInfo}, ${EncoderCommand} ">>${AllCasesPassStatusFile}
+	 
+	if [ ${BasicCheckFlag} -eq 1 -o  ${JSVMCheckFlag} -eq 1 ]
+	then
+		echo " ${EncoderCheckResult},${DecoderCheckResult}, ${BitStreamSHA1String}, ${BitStreamMD5String}, ${InputYUVSHA1String},${InputYUVMD5String}, ${TestCaseInfo}, ${EncoderCommand}">>${UnPassedCasesFile}
+	fi
 }
 runOutputCaseInfo()
 {
@@ -300,11 +286,6 @@ runOutputCaseInfo()
 }
 runBasicCheck()
 {
-	echo ""
-	echo "basic check:"
-	echo " ${EncoderFlag}  ${EncoderLog} ${EncoderNum}  ${SpatailLayerNum} ${RCMode} ${CheckLogFile} \
-			${aInputYUVSizeLayer[@]} ${aRecYUVFileList[@]} ${aRecCropYUVFileList[@]}  ${aEncodedPicW[@]} ${aEncodedPicH[@]}	"
-	echo ""
 	./run_CheckBasicCheck.sh  ${EncoderFlag}  ${EncoderLog} ${EncoderNum}  ${SpatailLayerNum} ${RCMode} ${CheckLogFile} \
 							${aInputYUVSizeLayer[@]} ${aRecYUVFileList[@]} ${aRecCropYUVFileList[@]}  ${aEncodedPicW[@]} ${aEncodedPicH[@]}		
 	return $?
@@ -329,16 +310,18 @@ runMain()
 	runEncoderCommandInital
 	runParseCaseInfo ${TestCaseInfo}
 	runSetCaseGlobalParam
-	
-	#runOutputCaseInfo
-	
 	runEncodeOneCase
 	
+	echo ""
+	let "BasicCheckFlag=0"
+	let "JSVMCheckFlag=0"
 	runBasicCheck
 	if [ ! $? -eq 0  ]
 	then
 		echo  -e "\033[31m  case failed! \033[0m"
+		let "BasicCheckFlag=1"
 		runParsetCaseCheckLog ${CheckLogFile}
+		runOutputCaseCheckStatus
 		exit 1
 	fi
 	
@@ -346,13 +329,16 @@ runMain()
 	if [ ! $? -eq 0  ]
 	then
 		echo  -e "\033[31m  case failed! \033[0m"
+		let "JSVMCheckFlag=1"
 		runParsetCaseCheckLog ${CheckLogFile}
+		runOutputCaseCheckStatus
 		exit 1
 	fi
 	
-	
+	runParsetCaseCheckLog ${CheckLogFile}
+	runOutputCaseCheckStatus
+	return 0
 }
-#call main function
 CaseInfo=$@
 runMain  ${CaseInfo}
 
