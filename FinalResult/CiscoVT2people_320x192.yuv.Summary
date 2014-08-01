@@ -1,9 +1,0 @@
-...............Test summary for CiscoVT2people_320x192.yuv...........................
-  total case  Num     ,  12
-  EncoderPassedNum    ,  0
-  EncoderUnPassedNum  ,  12 
-  DecoderPassedNum    ,  0
-  DecoderUpPassedNum  ,  0
-  DecoderUnCheckNum   ,  12
-  detail files can be found  in ../AllTestData/CiscoVT2people_320x192.yuv/result
-..........................................................................
