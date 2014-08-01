@@ -93,7 +93,7 @@ runJSVMDecodedFailedCheck()
 	echo "">${JSVMDecoderLog}
 	for((i=0; i<${SpatialLayerNum}; i++))
 	do
-		echo " JSVM decoding, layer $i....................."
+		echo " JSVM decoding, layer $i.....................">>${JSVMDecoderLog}
 		./${JSVMDecoder}  ${aLayerBitStream[$i]}  ${aLayerJSVMYUV[$i]} >>${JSVMDecoderLog}
 		
 		if [ ! $? -eq 0  -o  ! -e ${aLayerJSVMYUV[$i]} ]
@@ -116,8 +116,8 @@ runWelsDecodedFailedCheck()
 	echo "">${WelsDecoderLog}
 	for((i=0; i<${SpatialLayerNum}; i++))
 	do
-		echo " WelsDecoder decoding, layer $i..................... "
-		./${WelsDecoder}  ${aLayerBitStream[$i]}  ${aLayerWelsDecYUV[$i]} 2>>${WelsDecoderLog}
+		echo " WelsDecoder decoding, layer $i..................... ">>${WelsDecoderLog}
+		./${WelsDecoder}  ${aLayerBitStream[$i]}  ${aLayerWelsDecYUV[$i]}  2>>${WelsDecoderLog}
 		
 		if [ ! $? -eq 0  -o  ! -e ${aLayerWelsDecYUV[$i]} ]
 		then
@@ -397,7 +397,7 @@ runMain()
 	
 	#check RecYUV--JSVMDecYUV WelsDecYUV--JSVMDecYUV
 	echo "-------------------3. JSVM Check--WelsDecodee Decode Check"
-	runWelsDecodedFailedCheck
+	runWelsDecodedFailedCheck  >${TempDir}/WelsDecTemp.log
 	
 	runGenerateSHA1String
 	echo "-------------------4. JSVM Check--RecYUV-JSVMDecYUV-WelsDecYUV Comparison"
@@ -422,4 +422,5 @@ runMain()
 }
 
 runMain $@
+
 

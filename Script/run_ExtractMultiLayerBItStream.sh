@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #*************************************************************************
 # used bit stream extractor from train's project.
 #
@@ -10,7 +9,6 @@
 #
 #
 #*************************************************************************
-
 #usage: run_ExtractMultiLayerBItStream.sh  \
 #			${InputBitSteam} ${SpatialLayerNUm} ${OutputBitStreamNameL0}  \
 #			${OutputBitStreamNameL1} ${OutputBitStreamNameL2} ${OutputBitStreamNameL3} 
@@ -33,7 +31,6 @@ runMain()
 	local OutputBitStreamNameL1=$4
 	local OutputBitStreamNameL2=$5
 	local OutputBitStreamNameL3=$6
-
 	local Extractor="extractor.app"
 	if [ ! -e ${InputBitSteam}    ]
 	then
@@ -59,7 +56,7 @@ runMain()
 	let "ExtractFlag=0"
 	for((i=0;i<${SpatialLayerNUm}; i++))
 	do
-		./${Extractor}  ${InputBitSteam} ${aOutputBitStreamNameList[$i]}  -did $i
+		./${Extractor}  ${InputBitSteam} ${aOutputBitStreamNameList[$i]}  -did $i 2>BitStreamExtract.log
 		if [ ! $? -eq 0  -o  ! -e  ${aOutputBitStreamNameList[$i]} -o ! -s  ${aOutputBitStreamNameList[$i]} ]
 		then
 			let "ExtractFlag=1"
@@ -80,14 +77,12 @@ runMain()
 	fi
 		
 }
-
 InputBitSteam=$1
 SpatialLayerNUm=$2
 OutputBitStreamNameL0=$3
 OutputBitStreamNameL1=$4
 OutputBitStreamNameL2=$5
 OutputBitStreamNameL3=$6
-
 runMain ${InputBitSteam}         ${SpatialLayerNUm}       ${OutputBitStreamNameL0}  \
 		${OutputBitStreamNameL1} ${OutputBitStreamNameL2} ${OutputBitStreamNameL3} 
 

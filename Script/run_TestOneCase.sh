@@ -288,13 +288,35 @@ runBasicCheck()
 {
 	./run_CheckBasicCheck.sh  ${EncoderFlag}  ${EncoderLog} ${EncoderNum}  ${SpatailLayerNum} ${RCMode} ${CheckLogFile} \
 							${aInputYUVSizeLayer[@]} ${aRecYUVFileList[@]} ${aRecCropYUVFileList[@]}  ${aEncodedPicW[@]} ${aEncodedPicH[@]}		
-	return $?
+	#copy bit stream file to ./issue folder
+	if [ ! $? -eq 0 ]
+	then
+		if [ -e ${BitStreamFile}  ]
+		then
+			cp ${BitStreamFile}  ${IssueDataPath}
+		fi
+		return 1
+	else
+		return 0
+	fi
+	
 }
 runJSVMCheck()
 {
 	
 	./run_CheckByJSVMDecoder.sh ${CheckLogFile} ${TempDataPath}  ${InputYUV} ${BitStreamFile}  ${SpatailLayerNum}  ${aRecYUVFileList[@]}
-	return $?
+	
+	#copy bit stream file to ./issue folder
+	if [ ! $? -eq 0 ]
+	then
+		if [ -e ${BitStreamFile}  ]
+		then
+			cp ${BitStreamFile}  ${IssueDataPath}
+		fi
+		return 1
+	else
+		return 0
+	fi
 }
 # usage: runMain $TestYUV  $InputYUV $AllCaseFile
 runMain()
