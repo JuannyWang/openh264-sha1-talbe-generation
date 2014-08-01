@@ -94,7 +94,7 @@ runJSVMDecodedFailedCheck()
 	for((i=0; i<${SpatialLayerNum}; i++))
 	do
 		echo " JSVM decoding, layer $i.....................">>${JSVMDecoderLog}
-		./${JSVMDecoder}  ${aLayerBitStream[$i]}  ${aLayerJSVMYUV[$i]} >>${JSVMDecoderLog}
+		./${JSVMDecoder}   ${aLayerBitStream[$i]}  ${aLayerJSVMYUV[$i]} >>${JSVMDecoderLog}
 		
 		if [ ! $? -eq 0  -o  ! -e ${aLayerJSVMYUV[$i]} ]
 		then

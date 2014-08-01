@@ -2,31 +2,23 @@
 #*************************************************************************
 # used bit stream extractor from train's project.
 #
-#    ----usage: run_ExtractMultiLayerBItStream.sh \
-#                               ${InputBitSteam}   ${SpatialLayerNUm} \
-#							    ${OutputBitStreamNameL0} ${OutputBitStreamNameL1} \
-#                               ${OutputBitStreamNameL2} ${OutputBitStreamNameL3} 
+#    ----usage: run_ExtractMultiLayerBItStream.sh  ${InputBitSteam}  \
+#                         ${SpatialLayerNUm} ${OutputBitStreamName[@]}
 #
 #
 #*************************************************************************
-#usage: run_ExtractMultiLayerBItStream.sh  \
-#			${InputBitSteam} ${SpatialLayerNUm} ${OutputBitStreamNameL0}  \
-#			${OutputBitStreamNameL1} ${OutputBitStreamNameL2} ${OutputBitStreamNameL3} 
+#usage: run_ExtractMultiLayerBItStream.sh  ${SpatialLayerNUm} ${InputBitSteam}  ${OutputBitStreamName[@]}
 runMain()
 {
-	local Usage="usage: run_ExtractMultiLayerBItStream.sh  \
-				${InputBitSteam} \${SpatialLayerNUm} \${OutputBitStreamNameL0}  \
-				\${OutputBitStreamNameL1} \${OutputBitStreamNameL2} \${OutputBitStreamNameL3} "
 	if [  ! $# -eq 6  ]
 	then
 		echo ""
-		echo ${Usage}
+		echo "usage: run_ExtractMultiLayerBItStream.sh   \${SpatialLayerNUm} \${InputBitSteam} \${OutputBitStreamName[@]} "
 		echo ""
 		exit 1
 	fi
-	
-	local InputBitSteam=$1
-	local SpatialLayerNUm=$2
+	local SpatialLayerNUm=$1	
+	local InputBitSteam=$2
 	local OutputBitStreamNameL0=$3
 	local OutputBitStreamNameL1=$4
 	local OutputBitStreamNameL2=$5
@@ -77,13 +69,6 @@ runMain()
 	fi
 		
 }
-InputBitSteam=$1
-SpatialLayerNUm=$2
-OutputBitStreamNameL0=$3
-OutputBitStreamNameL1=$4
-OutputBitStreamNameL2=$5
-OutputBitStreamNameL3=$6
-runMain ${InputBitSteam}         ${SpatialLayerNUm}       ${OutputBitStreamNameL0}  \
-		${OutputBitStreamNameL1} ${OutputBitStreamNameL2} ${OutputBitStreamNameL3} 
+runMain  $@
 
 
