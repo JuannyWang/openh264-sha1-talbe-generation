@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #**************************************************************************
 #Brief: to check whether the encoded number is the same with given setting
 #
@@ -11,7 +10,6 @@
 #
 #
 #**************************************************************************
-
 runOutputFailedCheckLog()
 {
 	echo  "EncoderPassedNum:   0"
@@ -27,7 +25,6 @@ runOutputFailedCheckLog()
 	echo "EncoderCheckResult: ${EncoderCheckResult}"
 	echo "DecoderCheckResult: ${DecoderCheckResult}"
 }
-
 runEncoderFailedCheck()
 {
 	if [ ! ${EncoderFlag} -eq 0 ]
@@ -39,7 +36,6 @@ runEncoderFailedCheck()
 	fi	
 	return 0
 }
-
 runRecYUVCheck()
 {
 	let "RecFlag=0"
@@ -51,7 +47,6 @@ runRecYUVCheck()
 			let "RecFlag=1"
 		fi		
 	done
-
 	if [ ! ${RecFlag} -eq 0  ]
 	then
 		EncoderCheckResult="1-Encoder failed!--RecYUV does not exist"
@@ -61,12 +56,9 @@ runRecYUVCheck()
 	fi	
 	return 0
 }
-
-
 runEncodedNumCheck()
 {
-
-	if [ ${RCMode} -eq 0 ]
+	if [ ${RCMode} -eq -1 ]
 	then
 		./run_CheckEncodedNum.sh  ${EncodedNum} ${SpatailLayerNum} ${EncoderLog} ${aInputYUVSizeLayer[@]} ${aRecCropYUVFileList[@]}
 		
@@ -82,8 +74,6 @@ runEncodedNumCheck()
 		return 0
 	fi	
 }
-
-
 runCropRecYUV()
 {
 	let "CropFlag=0"
@@ -114,8 +104,6 @@ runCropRecYUV()
 	
 	return 0
 }
-
-
 runOutputParameter()
 {
 	echo ""
@@ -128,7 +116,6 @@ runOutputParameter()
 	echo ""
 	
 }
-
 #Usage: run_CheckBasicCheck.sh  $EncoderFlag  $EncoderLog $EncodedNum  $SpatailLayerNum $RCMode CheckLog 
 #		                        $aInputYUVSizeLayer  $aRecYUVFileList  $aRecCropYUVFileList  $aEncodedPicW aEncodedPicH 
 runMain()
@@ -215,8 +202,7 @@ runMain()
 	echo -e "\033[32m    3.encoded number check  passed!  \033[0m"
 	echo ""
 	return 0
-
 }
-
 runMain $@
+
 
