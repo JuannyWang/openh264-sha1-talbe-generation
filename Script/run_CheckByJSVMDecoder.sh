@@ -1,7 +1,4 @@
 #!/bin/bash
-
-
-
 runIntialGlobalParam()
 {
 	declare -a aParameter
@@ -29,7 +26,7 @@ runIntialGlobalParam()
 	CheckLogFile=""
 	JSVMDecoder="H264AVCDecoderLibTestStatic"
 	JMDecoder="JMDecoder"
-	WelsDecoder="welsdec.exe"
+	WelsDecoder="h264dec"
 	
 	BitStreamSHA1String="NULL"
 	InputYUVSHA1String="NULL"
@@ -40,8 +37,6 @@ runIntialGlobalParam()
 	DecoderCheckResult="NULL" 
 	
 }
-
-
 runSetGlobalParam()
 {
 	CurrentDir=`pwd`
@@ -70,10 +65,8 @@ runSetGlobalParam()
 	let "DecoderUnCheckNum  = 1"
 	
 }
-
 runOutputCheckLog()
 {
-
 	echo  "EncoderPassedNum:   ${EncoderPassedNum}"
 	echo  "EncoderUnPassedNum: ${EncoderUnPassedNum}"
 	echo  "DecoderPassedNum:   ${DecoderPassedNum}"
@@ -87,7 +80,6 @@ runOutputCheckLog()
 	echo "EncoderCheckResult: ${EncoderCheckResult}"
 	echo "DecoderCheckResult: ${DecoderCheckResult}"
 }
-
 runJSVMDecodedFailedCheck()
 {
 	echo "">${JSVMDecoderLog}
@@ -109,10 +101,8 @@ runJSVMDecodedFailedCheck()
 	cat ${JSVMDecoderLog}
 	return 0
 }
-
 runWelsDecodedFailedCheck()
 {
-
 	echo "">${WelsDecoderLog}
 	for((i=0; i<${SpatialLayerNum}; i++))
 	do
@@ -132,10 +122,8 @@ runWelsDecodedFailedCheck()
 	cat ${WelsDecoderLog}
 	return 0
 }
-
 runGenerateSHA1String()
 {
-
 	for((i=0; i<${SpatialLayerNum}; i++))
 	do
 		if [ -e  ${aLayerJSVMYUV[$i]}  ]
@@ -165,7 +153,6 @@ runGenerateSHA1String()
 		BitStreamMD5String=`openssl md5   ${BitStream}`
 		BitStreamMD5String=`echo ${BitStreamMD5String}  | awk '{print $2}' `
 	fi	
-
 	if [ -e ${OringInputYUV} ]
 	then
 		InputYUVSHA1String=`openssl sha1  ${OringInputYUV} `
@@ -176,15 +163,11 @@ runGenerateSHA1String()
 	fi	
 	
 }
-
-
-
 runRecYUVJSVMDecYUCompare()
 {
 	
 	let "RecJSVMFlag=0"
 	let "WelsDecJSVMFlag=0"
-
 	for((i=0; i<${SpatialLayerNum}; i++))
 	do
 		if [  ! "${aRecYUVSHA1String[$i]}" = "${aJSVMYUVSHA1String[$i]}"  ]
@@ -247,8 +230,6 @@ runRecYUVJSVMDecYUCompare()
 	fi
 	return 0
 }
-
-
 runCheckParameter()
 {
 	
@@ -305,9 +286,7 @@ runCheckParameter()
 	fi
 	
 	return 0
-
 }
-
 runOutputCheckInfo()
 {
 	echo "-------------------5. JSVM Check--Check Result"
@@ -326,9 +305,7 @@ runOutputCheckInfo()
 	echo "RecJSVMFlag            ${RecJSVMFlag} "
 	echo "WelsDecJSVMFlag        ${WelsDecJSVMFlag}"
 	echo "SpatialLayerNum        ${SpatialLayerNum}"
-
 }
-
 #usage: run_CheckByJSVMDecoder.sh ${CheckLogFile} ${TempDir}  ${OringInputYUV} ${BitStream}  ${SpatialNum} ${aRecYUVList[@]}
 runMain()
 {
@@ -420,7 +397,6 @@ runMain()
 	fi
 	
 }
-
 runMain $@
 
 

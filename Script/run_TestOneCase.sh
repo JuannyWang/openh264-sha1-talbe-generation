@@ -54,23 +54,23 @@ runGlobalVariableInitial()
 runEncoderCommandInital()
 {
 	aEncoderCommandSet=(-scrsig  -frms  -numl   -numtl \
-					-sh -sw  "-sw 0"  "-sh 0" "-sw 1" "-sh 1" "-sw 2" "-sh 2" "-sw 3" "-sh 3" \
+					-sh -sw  "-dw 0"  "-dh 0" "-dw 1" "-dh 1" "-dw 2" "-dh 2" "-dw 3" "-dh 3" \
 					"-frout 0" "-frout 1" "-frout 2" "-frout 3" \
 					"-lqp 0" "-lqp 1" "-lqp 2" "-lqp 3" \
 					-rc -tarb "-ltarb 0" 	"-ltarb 1" "-ltarb 2" "-ltarb 3" \
 					"-slcmd 0" "-slcnum 0" "-slcmd 1" "-slcnum 1"\
 					"-slcmd 2" "-slcnum 2" "-slcmd 3" "-slcnum 3"\
-					"-slcsize 0"  "-slcsize 1" "-slcsize 2" "-slcsize 3" \
+					-nalsize \
 					-iper   -thread    -ltr \
 					-db  -denois    -scene    -bgd    -aq )
 	aEncoderCommandName=(scrsig  frms  numl   numtl \
-					sw sh  sw0 sh0 sw1 sh1 sw2 sh2 sw3 sh3 \
+					sw sh  dw0 dh0 dw1 dh1 dw2 dh2 dw3 dh3 \
 					frout0 frout1 frout2 frout3 \
 					lqp0 lqp1 lqp2 lqp3 \
 					rc tarb ltarb0 	ltarb1 ltarb2 ltarb3 \
 					slcmd0 slcnum0 slcmd1 slcnum1 \
 					slcmd2 slcnum2 slcmd3 slcnum3 \
-					slcsz0 slcsz1  slcsz2 slcsz3  \
+					MaxNalSZ  \
 					iper   thread  ltr \
 					db  denois  scene  bgd  aq )	
 	NumParameter=${#aEncoderCommandSet[@]}
@@ -93,7 +93,7 @@ runParseCaseInfo()
 	local TempData=""
 	
 	local CaseData=$@
-	declare -a aTempParamIndex=( 6 7 8 9 10 11 12 13    15 16 17   19 20 21     24 25 26 27   30 31 32 33 34 35  37 38 39 )
+	declare -a aTempParamIndex=( 6 7 8 9 10 11 12 13    15 16 17   19 20 21     24 25 26 27   30 31 32 33 34 35 )
 	TempData=`echo $CaseData |awk 'BEGIN {FS="[,\r]"} {for(i=1;i<=NF;i++) printf(" %s",$i)} ' `
 	aEncoderCommandValue=(${TempData})
 	let "TempParamFlag=0"
@@ -145,43 +145,27 @@ runEncodeOneCase()
 {
  
 	local ParamCommand=""
-	local InputYUVCommand=""
-	local CfgFileCommand=""
-	
-	let "FPS=${aEncoderCommandValue[14]}"
-	
-	declare -a aConfigureFile
-	declare -a aLayerInputYUV
-	aConfigureFile=(layer0.cfg layer1.cfg layer2.cfg layer3.cfg  )
-	aLayerInputYUV=(${YUVFileLayer0} ${YUVFileLayer1} ${YUVFileLayer2} ${YUVFileLayer3} )
-	
-	CfgFileCommand="-numl ${SpatailLayerNum}  "
-	for((i=0;i<${SpatailLayerNum};i++))
-	do
-		let "InputIndex=$i + 4 - ${SpatailLayerNum}"
-		CfgFileCommand="${CfgFileCommand} ${aConfigureFile[$i]} "
-		InputYUVCommand="$InputYUVCommand  -org $i ${aLayerInputYUV[$InputIndex]} "
-	done
-	
-	for ((i=6; i<${NumParameter}; i++))
+	for ((i=4; i<${NumParameter}; i++))
 	do
 		ParamCommand="${ParamCommand} ${aEncoderCommandSet[$i]}  ${aEncoderCommandValue[$i]} " 
 	done
 	
 	
 	ParamCommand="${aEncoderCommandSet[0]} ${aEncoderCommandValue[0]} ${aEncoderCommandSet[1]}  ${aEncoderCommandValue[1]} \
-				${aEncoderCommandSet[3]}  ${aEncoderCommandValue[3]} -frin 0 ${FPS} -frin 1 ${FPS} -frin 2 ${FPS} -frin 3 ${FPS} \
+				 ${aEncoderCommandSet[2]}  ${aEncoderCommandValue[2]} \
+				-lconfig 0 layer0.cfg -lconfig 1 layer1.cfg -lconfig 2 layer2.cfg  -lconfig 3 layer3.cfg  \
+				${aEncoderCommandSet[3]}  ${aEncoderCommandValue[3]}  \
 				${ParamCommand}"
 	echo ""
 	echo "---------------Encode One Case-------------------------------------------"
 	echo "case line is :"
-	EncoderCommand="./welsenc.exe  wbxenc.cfg  ${CfgFileCommand}   ${ParamCommand} -bf   ${BitStreamFile} \
+	EncoderCommand="./h264enc  welsenc.cfg    ${ParamCommand} -bf   ${BitStreamFile} \
 				-drec 0 ${aRecYUVFileList[0]} -drec 1 ${aRecYUVFileList[1]} \
-				-drec 2 ${aRecYUVFileList[2]} -drec 3 ${aRecYUVFileList[3]}  ${InputYUVCommand}"
+				-drec 2 ${aRecYUVFileList[2]} -drec 3 ${aRecYUVFileList[3]}  -org ${InputYUV}"
 	echo ${EncoderCommand}
-	./welsenc.exe  wbxenc.cfg  ${CfgFileCommand}   ${ParamCommand} -bf   ${BitStreamFile} \
+	./h264enc  welsenc.cfg    ${ParamCommand} -bf   ${BitStreamFile} \
 				-drec 0 ${aRecYUVFileList[0]} -drec 1 ${aRecYUVFileList[1]} \
-				-drec 2 ${aRecYUVFileList[2]} -drec 3 ${aRecYUVFileList[3]}  ${InputYUVCommand}>${EncoderLog}
+				-drec 2 ${aRecYUVFileList[2]} -drec 3 ${aRecYUVFileList[3]}  -org ${InputYUV}>${EncoderLog}
 	
 	if [ $? -eq 0  ]
 	then
@@ -189,6 +173,8 @@ runEncodeOneCase()
 	else
 		let "EncoderFlag=1"
 	fi
+	cat  ${EncoderLog}
+	return 0
 	
 }
 #usage: runGetFileSize  $FileName

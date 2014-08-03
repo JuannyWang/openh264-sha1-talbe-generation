@@ -41,25 +41,25 @@ runGlobalVariableInitial()
 	CaseSummaryFile="${ResultPath}/${TestYUVName}.Summary"
 	HeadLine1="EncoderFlag,DecoderFlag,BitSreamSHA1, BitSreamMD5, InputYUVSHA1, InputYUVMD5,\
 			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
-			-sw 0, -sh 0, -sw 1, -sh 1, -sw 2, -sh 2, -sw 3, -sh 3,\
+			-dw 0, -dh 0, -dw 1, -dh 1, -dw 2, -dh 2, -dw 3, -dh 3,\
 			-frout 0,  -frout 1, -frout 2, -frout 3,\
 			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
 			-rc, -tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
 			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
 			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
-			-slicesize 0, -slicesize 1, -slicesize 2, -slicesize 3,\
+			-nalsize,\
 			-iper, -thread, -ltr, -db, -denois,\
 			-scene,  -bgd ,  -aq, "
 	
 	HeadLine2="BitSreamSHA1, BitSreamMD5, InputYUVSHA1, InputYUVMD5,\
 			-scrsig,  -frms,  -numl,  -numtl, -sw, -sh,\
-			-sw 0, -sh 0, -sw 1, -sh 1,-sw 2, -sh 2, -sw 3, -sh 3,\
+			-dw 0, -dh 0, -dw 1, -dh 1,-dw 2, -dh 2, -dw 3, -dh 3,\
 			-frout 0,  -frout 1, -frout 2, -frout 3,\
 			-lqp 0, -lqp 1, -lqp 2, -lqp 3,\
 			-rc, -tarb, -ltarb 0, -ltarb 1, -ltarb 2, -ltarb 3,\
 			-slcmd 0, -slcnum 0, -slcmd 1, -slcnum 1,\
 			-slcmd 2, -slcnum 2, -slcmd 3, -slcnum 3,\
-			-slicesize 0, -slicesize 1, -slicesize 2, -slicesize 3,\
+			-nalsize,\
 			-iper, -thread, -ltr, -db, -denois,\
 			-scene  , bgd  , -aq "
 			
@@ -207,7 +207,6 @@ runAllCaseTest()
 			export AllCasesPassStatusFile
 			export UnPassedCasesFile
 			export AllCasesSHATableFile
-			export EncoderLog
 			export CheckLogFile
 			export YUVSizeLayer0
 			export YUVSizeLayer1
@@ -248,8 +247,8 @@ runOutputPassNum()
 	echo  -e "\033[32m DecoderPassedNum    is : ${DecoderPassedNum}\033[0m"
 	echo  -e "\033[31m DecoderUpPassedNum  is : ${DecoderUpPassedNum}\033[0m"
 	echo  -e "\033[31m DecoderUnCheckNum   is : ${DecoderUnCheckNum}\033[0m"
-	echo "issue bitstream can be found in .../AllTestData/${TestFolder}/issue"
-	echo "detail result  can be found in .../AllTestData/${TestFolder}/${ResultPath}"
+	echo "issue bitstream can be found in ./AllTestData/${TestFolder}/issue"
+	echo "detail result  can be found in  ./AllTestData/${TestFolder}/${ResultPath}"
 	echo  -e "\033[32m *********************************************************** \033[0m"
 	echo ""
 	echo "...............Test summary for ${TestYUVName}...........................">${CaseSummaryFile}
@@ -259,7 +258,7 @@ runOutputPassNum()
 	echo "  DecoderPassedNum    ,  ${DecoderPassedNum}" >>${CaseSummaryFile}
 	echo "  DecoderUpPassedNum  ,  ${DecoderUpPassedNum}" >>${CaseSummaryFile}
 	echo "  DecoderUnCheckNum   ,  ${DecoderUnCheckNum}" >>${CaseSummaryFile}
-	echo "  detail files can be found  in ../AllTestData/${TestFolder}/${ResultPath}" >>${CaseSummaryFile}
+	echo "  detail files can be found  in ./AllTestData/${TestFolder}/${ResultPath}" >>${CaseSummaryFile}
 	echo "..........................................................................">>${CaseSummaryFile}
 	echo  -e "\033[32m *********************************************************** \033[0m"
 	

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #************************************************************************************************
 #
 # Usage:   run_CheckEncodedNum.sh  $EncoderNum  $SpatailLayerNum \
@@ -11,7 +10,6 @@
 #                                          640X360.yuv 1280X720.yuv  NuLL01.yuv NULL02.yuv
 #
 #************************************************************************************************
-
 #usage: runGetFileSize  $FileName
 runGetFileSize()
 {
@@ -23,7 +21,6 @@ runGetFileSize()
 		echo ""
 		return 1
 	fi
-
 	local FileName=$1
 	local FileSize=""
 	local TempInfo=""
@@ -35,7 +32,6 @@ runGetFileSize()
 #usage: runCheckActulLayerSize ${ActualSpatialNum}
 runCheckActulLayerSize()
 {
-
 	if [ ! $# -eq 1 ]
 	then
 		echo "usage: runCheckActulLayerSize ${ActualSpatialNum}"
@@ -78,8 +74,6 @@ runCheckActulLayerSize()
 		return 0
 	fi
 }
-
-
 #usage: runGetEncodedNum  ${EncoderLog}
 runGetEncodedNum()
 {
@@ -92,7 +86,7 @@ runGetEncodedNum()
 	local EncodedNum="0"
 	while read line
 	do
-		if [[  ${line}  =~ ^Number  ]]
+		if [[  ${line}  =~ ^Frames  ]]
 		then
 			EncodedNum=`echo $line | awk 'BEGIN {FS="[:\r]"} {print $2}'`
 			break
@@ -100,20 +94,16 @@ runGetEncodedNum()
 	done <${EncoderLog}
 	echo ${EncodedNum}
 }
-
 #Usage runCheckActualEncodedNum ${ConfiguredEncodedNum}
 runCheckActualEncodedNum()
 {
-
 	if [ ! $# -eq 1  ]
 	then
 		echo "Usage: runCheckActualEncodedNum \${ConfiguredEncodedNum}"
 		exit 1
 	fi
-
 	local ConfiguredEncodedNum=$1
 	local ActualEncodedNum=""
-
 	ActualEncodedNum=`runGetEncodedNum  ${EncoderLog}`
 	echo ""
 	echo "Config--Actual: ${ActualEncodedNum}----${ConfiguredEncodedNum}"
@@ -131,10 +121,8 @@ runCheckActualEncodedNum()
 		return 1	
 	fi
 }
-
 runMain()
 {
-
 	if [ ! $# -eq 11  ]
 	then
 		echo	""
@@ -142,7 +130,6 @@ runMain()
 		echo ""
 		exit 1
 	fi
-
 	declare -a aParameterSet
 	declare -a aInputLayerYUVSize
 	declare -a aRecYUVLayerSize
@@ -169,7 +156,6 @@ runMain()
 		echo ""
 		exit 1
 	fi	
-
 	
 	if [ ${EncoderNum} -eq -1 ]
 	then
@@ -193,9 +179,7 @@ runMain()
 		echo ""	
 		return 1
 	fi
-
 }
-
 runMain $@   
 
 
