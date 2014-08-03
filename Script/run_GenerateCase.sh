@@ -391,8 +391,7 @@ runSecondStageCase()
 								1,1,\
 								1,1,\
 								1,1,\
-								${TempNalSize}, ${TempNalSize},\
-								${TempNalSize}, ${TempNalSize},\
+								${TempNalSize},\
 								$IntraPeriodIndex,\
 								$ThreadNum">>$casefile_02							
 							else
@@ -401,8 +400,7 @@ runSecondStageCase()
 								${SlcMode}, ${SlcNum},\
 								${SlcMode}, ${SlcNum},\
 								${SlcMode}, ${SlcNum},\
-								${TempNalSize}, ${TempNalSize},\
-								${TempNalSize}, ${TempNalSize},\
+								${TempNalSize},\
 								${IntraPeriodIndex},\
 								${ThreadNum}">>$casefile_02
 							fi
@@ -532,10 +530,7 @@ runBeforeGenerate()
 		SliceNmuLayer2,\
 		SliceMdLayer3, \
 		SliceNmuLayer3,\
-		MaxSlcSize0,\
-		MaxSlcSize1,\
-		MaxSlcSize2,\
-		MaxSlcSize3,\
+		MaxNalSize,\
 		IntraPeriod,\
 		MultipleThreadIdc,\
 		EnableLongTermReference,\
