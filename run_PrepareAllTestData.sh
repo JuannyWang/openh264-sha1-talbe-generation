@@ -31,16 +31,21 @@ runGetTestYUVList()
 		return 1
 	fi
 	local ConfigureFile=$1
+	local TestSet0=""
 	local TestSet1=""
 	local TestSet2=""
 	local TestSet3=""
 	local TestSet4=""
 	local TestSet5=""
 	local TestSet6=""
-	local TestSet7=""   
+	local TestSet7=""
+	local TestSet8=""	
 	while read line
 	do
-	if [[ "$line" =~ ^TestSet1  ]]
+	if [[ "$line" =~ ^TestSet0  ]]
+	then
+		TestSet0=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+	elif  [[ "$line" =~ ^TestSet1  ]]
 	then
 		TestSet1=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
 	elif  [[ "$line" =~ ^TestSet2  ]]
@@ -61,9 +66,12 @@ runGetTestYUVList()
 	elif  [[ "$line" =~ ^TestSet7  ]]
 	then
 		TestSet7=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
+	elif  [[ "$line" =~ ^TestSet8  ]]
+	then
+		TestSet8=`echo $line | awk 'BEGIN {FS="[#:]" } {print $2}' `
 	fi	  	  
 	done <${ConfigureFile}
-	echo "${TestSet1}  ${TestSet2}  ${TestSet3}  ${TestSet4}  ${TestSet5}  ${TestSet6}  ${TestSet7}  " 
+	echo "${TestSet8} ${TestSet1}  ${TestSet2}  ${TestSet3}  ${TestSet4}  ${TestSet5}  ${TestSet6}  ${TestSet7}  ${TestSet8} " 
 }
 #usage: runPrepareALlFolder   $AllTestDataFolder  $TestBitStreamFolder   $CodecFolder  $ScriptFolder  $ConfigureFile/$SH1TableFolder
 runPrepareALlFolder()
