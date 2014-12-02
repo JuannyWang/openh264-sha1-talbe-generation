@@ -107,15 +107,38 @@ runCopyFile()
 
   local OpenH264Dir=$1
   local CodecDir="Codec"
-  local BitStreamFileDir="BitStreamForTest"
+  local BitStreamFileDir=
+  
+  declare -a aBitStreamList
+  aBitStreamList=(BA_MW_D.264 LS_SVA_D.264 CVPCMNL1_SVA_C.264)
+  
+  if [ -d ${BitStreamFileDir}  ]
+  then
+      ./Script/run_SafeDelete.sh ${BitStreamFileDir}
+  fi
+  
+  mkdir ${BitStreamFileDir}
 
   cp -f ${OpenH264Dir}/h264enc  ${CodecDir}
   cp -f ${OpenH264Dir}/h264dec  ${CodecDir}
 
   cp -f ${OpenH264Dir}/testbin/layer2.cfg      ${CodecDir}
   cp -f ${OpenH264Dir}/testbin/welsenc.cfg     ${CodecDir}
-
-  cp -f ${OpenH264Dir}/res/*.264     ${BitStreamFileDir}
+  
+  for file in ${aBitStreamList[@]}
+  do
+      Bitstream=${OpenH264Dir}/res/${file}
+      if [ ! -e ${Bitstream} ]
+      then
+          echo "bit stream file ${Bitstream} does not exist,please double check!"
+          return 1
+      fi
+      cp -f ${Bitstream}    ${BitStreamFileDir}
+  done
+  
+  cp -f ${OpenH264Dir}/res/BA_MW_D.264     ${BitStreamFileDir}
+  cp -f ${OpenH264Dir}/res/LS_SVA_D.264     ${BitStreamFileDir}
+  cp -f ${OpenH264Dir}/res/CVPCMNL1_SVA_C.264     ${BitStreamFileDir}
 }
 #useage: ./run_CodecBitStreamUpdate.sh   ${Openh264Dir}
 runMain()
@@ -130,8 +153,8 @@ runMain()
   local CurrentDir=`pwd`
   local YUVDumpMacroFileName="as264_common.h"
   local YUVDumpMacroFIleDir="codec/encoder/core/inc"
-  local TestBitStreamFileDir=""
-  local YUVDumpMacroFile=""
+  BitStreamFileDir="BitStreamForTest"
+  YUVDumpMacroFile=""
 
   if [ ! -d  ${Openh264Dir} ]
   then
