@@ -23,6 +23,10 @@ how to use
 
 
         1. change your test configure by editing file CaseConfigure/case_XXX.cfg;
+        	--eg. change your repository address and branch as below in confugre file:
+        		GitAddress  https://github.com/cisco/openh264
+        		GitBranch   master
+        		
         2. for how to generate your personal test case, please refer to section 
            "how to configure test case";
         3. ./run_Main.sh  SGETest  ./CaseConfigure/case_XXX.cfg;
@@ -35,6 +39,10 @@ how to use
 
 
         1. change your test configure by editing file CaseConfigure/case_XXX.cfg;
+        	--eg. change your repository address and branch as below in confugre file:
+        		GitAddress  https://github.com/cisco/openh264
+        		GitBranch   master
+        		
         2. for how to generate your personal test case, please refer to section 
            "how to configure test case";
         3. ./run_Main.sh  LocalTest  ./CaseConfigure/case_XXX.cfg;
@@ -46,7 +54,8 @@ how to use
 how does it work
 ----------------
 
--   step 1. script will clone latest openh264 codec from  offical branch to local host;
+-   step 1. script will clone latest openh264 codec from  your given github based openh264 address and
+	branch to local host;
 -   step 2. script will automatically build and updaed openh264 codec in folder ./Codec;
 -   for step 1~2,please refer to section "how to update your test codec";
 -   step 3. prepare all test space for each test YUV;
@@ -114,6 +123,10 @@ structure
    
     all SHA1 table of each test sequence.
 
+-   YUVForBitstream
+   
+    those YUV decoded by h264dec using bit stream in  openh264/res/*.264
+
 
 how to update your test codec
 ----------------------------
@@ -180,11 +193,13 @@ how to configure test case
             UsageType:     1            #0: camera video 1:screen content
 
 
--6. TestYUV 
+-6. Test bit stream setting
 
-          input yuv setting, change the dir based on your test sequence folder.
-          TestYUVDir:   /home/Video/YUV
-           
+          set the test bit stream in  openh264/res/*.264, and script will decode bit stream into test yuv
+          under folder ./YUVForBitstream
+          	  TestSet0:   BA_MW_D.264
+          	  TestSet1:   MR2_MW_A.264
+          	
           and script will prepare (down sample for multiple layers etc.)
           final test input yuv under:
               --SGE test, under /home/$SGEhost/SGEJobID_$SGEJobID/
