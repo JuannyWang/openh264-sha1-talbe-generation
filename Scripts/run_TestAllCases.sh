@@ -38,7 +38,7 @@ runGlobalVariableInitial()
 	#test cfg file and test info output file
 	AllCasesPassStatusFile="${ResultPath}/${TestYUVName}_AllCasesOutput.csv"
 	UnPassedCasesFile="${ResultPath}/${TestYUVName}_UnpassedCasesOutput.csv"
-	AllCasesSHATableFile="${ResultPath}/${TestYUVName}_AllCases_SHA1_Table.csv"
+	AllCasesSHATableFile="${ResultPath}/${TestBitstreamName}.264_AllCases_SHA1_Table.csv"
 	AllCasesConsoleLogFile="${ResultPath}/${TestYUVName}_0.TestLog"
 	CaseSummaryFile="${ResultPath}/${TestYUVName}.Summary"
 	HeadLine1="EncoderFlag, DecoderFlag, FPS, BitSreamSHA1, BitSreamMD5, InputYUVSHA1, InputYUVMD5,\
@@ -340,6 +340,7 @@ runMain()
 	TestYUVName=$3
 	InputYUV=$4
 	AllCaseFile=$5
+	TestBitstreamName=`echo $TestYUVName | awk 'BEGIN {FS=".264"} { print $1}'`
 	runGlobalVariableInitial
 	runParseConfigure
 
