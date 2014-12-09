@@ -59,7 +59,7 @@ how does it work
 -   step 2. script will automatically build and updaed openh264 codec in folder ./Codec;
 -   for step 1~2,please refer to section "how to update your test codec";
 -   step 3. prepare all test space for each test YUV
-            (will decoded the 264 file into test YUV and put it into YUVForBitStream  folder);
+            (will decoded the 264 files into test YUV and put it into YUVForBitStream  folder);
 -   step 4. run all test cases for all test YUVs;
 -   step 5. for SGE test, script will detectced that whether all submitted jobs have be finished very 60 minutes.
             the test time depends on the capability of SGE system;
