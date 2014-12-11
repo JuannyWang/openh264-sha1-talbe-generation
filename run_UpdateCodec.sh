@@ -52,6 +52,11 @@ runBuildCodec()
 		return 1
 	fi
 	cd ${OpenH264Dir}
+	echo ""
+	echo "openh264 commit info is :"
+	git log -2
+	echo ""
+	echo ""
 	make clean  >${BuildLog}
 	make >>${BuildLog}
 	if [ ! -e h264enc  ]
